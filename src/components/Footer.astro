@@ -1,0 +1,66 @@
+---
+import { TRACKS } from '../data/tracks';
+import { STORE_URL } from '../config';
+import { t, type Locale } from '../i18n/ui';
+import { trackUrl } from '../lib/lessons';
+
+interface Props {
+  locale: Locale;
+}
+const { locale } = Astro.props;
+---
+
+<footer class="footer">
+  <svg class="wave" viewBox="0 0 1440 80" preserveAspectRatio="none" aria-hidden="true">
+    <path d="M0 48C240 8 480 0 720 24s480 56 720 16v40H0Z" fill="currentColor" />
+  </svg>
+  <div class="footer-body">
+    <div class="wrap footer-in">
+      <div class="footer-brand">
+        <img src="/logo-mark-white.png" alt="" width="64" height="57" />
+        <p>{t(locale, 'footer.note')}</p>
+      </div>
+      <nav aria-label={t(locale, 'nav.tracks')}>
+        <ul>
+          {TRACKS.map((track) => (
+            <li><a href={trackUrl(locale, track.id)}>{track.name[locale]}</a></li>
+          ))}
+        </ul>
+      </nav>
+      <p class="footer-legal">
+        © {new Date().getFullYear()} De9De9 ·{' '}
+        <a href={`${STORE_URL}/${locale}?utm_source=academy&utm_medium=footer`}>{t(locale, 'nav.store')}</a>
+      </p>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .footer { margin-top: 64px; color: var(--brand-deep); }
+  .wave { width: 100%; height: 48px; margin-bottom: -1px; }
+  .footer-body { background: var(--brand-deep); color: #fff; padding-block: 28px 36px; }
+  .footer-in {
+    display: grid;
+    gap: 24px;
+  }
+  @media (min-width: 720px) {
+    .footer-in { grid-template-columns: 1.4fr 1fr; align-items: start; }
+    .footer-legal { grid-column: 1 / -1; }
+  }
+  .footer-brand { display: flex; gap: 16px; align-items: center; }
+  .footer-brand img { width: 56px; height: auto; flex: none; }
+  .footer-brand p { font-size: 14px; opacity: 0.92; max-width: 46ch; }
+  ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+  ul a {
+    display: inline-block;
+    padding: 6px 14px;
+    border: 1px solid rgba(255, 255, 255, 0.55);
+    border-radius: 999px;
+    color: #fff;
+    font-size: 14px;
+    text-decoration: none;
+  }
+  ul a:hover { background: rgba(255, 255, 255, 0.12); }
+  .footer-legal { font-size: 13px; opacity: 0.85; }
+  .footer-legal a { color: #fff; }
+</style>

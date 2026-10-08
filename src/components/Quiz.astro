@@ -1,0 +1,147 @@
+---
+import { t, type Locale } from '../i18n/ui';
+
+interface Props {
+  locale: Locale;
+  lessonKey: string;
+  quiz: { question: string; options: string[]; answer: number; explanation: string }[];
+  next?: { href: string; label: string };
+}
+const { locale, lessonKey, quiz, next } = Astro.props;
+const id = lessonKey.replace(/\W/g, '-');
+---
+
+<section class="quiz card" aria-labelledby={`${id}-title`}>
+  <div class="quiz-head">
+    <h2 id={`${id}-title`}>{t(locale, 'quiz.title')}</h2>
+    <p>{t(locale, 'quiz.lead')}</p>
+  </div>
+  <form
+    data-quiz={lessonKey}
+    data-msg-incomplete={t(locale, 'quiz.incomplete')}
+    data-msg-score={t(locale, 'quiz.score')}
+    novalidate
+  >
+    <ol class="questions">
+      {quiz.map((q, qi) => (
+        <li>
+          <fieldset data-answer={String(q.answer)}>
+            <legend>{q.question}</legend>
+            <div class="options">
+              {q.options.map((option, oi) => (
+                <label class="option">
+                  <input type="radio" name={`${id}-q${qi}`} value={String(oi)} />
+                  <span>{option}</span>
+                </label>
+              ))}
+            </div>
+            <p class="why">
+              <svg class="mark-right" viewBox="0 0 20 20" aria-hidden="true"><path d="m5 10.5 3.2 3.2L15 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" /></svg>
+              <svg class="mark-wrong" viewBox="0 0 20 20" aria-hidden="true"><path d="m6 6 8 8m0-8-8 8" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" /></svg>
+              <span>{q.explanation}</span>
+            </p>
+          </fieldset>
+        </li>
+      ))}
+    </ol>
+    <p class="status" data-quiz-status role="status" aria-live="polite"></p>
+    <div class="actions">
+      <button class="btn btn-primary" type="submit" data-quiz-submit>{t(locale, 'quiz.check')}</button>
+      <button class="btn btn-outline" type="button" data-quiz-retry hidden>{t(locale, 'quiz.retry')}</button>
+    </div>
+    <div class="success" data-quiz-success tabindex="-1" hidden>
+      <span class="success-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><path d="m6 12.5 4 4L18 8" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" /></svg>
+      </span>
+      <p class="success-title">{t(locale, 'quiz.success')}</p>
+      {next && (
+        <a class="btn btn-primary" href={next.href}>
+          {next.label}
+          <svg class="flip" viewBox="0 0 20 20" aria-hidden="true"><path d="M8 5l5 5-5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
+        </a>
+      )}
+    </div>
+  </form>
+  <noscript><p class="noscript">{t(locale, 'quiz.noscript')}</p></noscript>
+</section>
+
+<style>
+  .quiz { padding: 24px 20px; margin-top: 40px; }
+  @media (min-width: 720px) { .quiz { padding: 28px; } }
+  .quiz-head h2 { font-size: 20px; font-weight: 600; }
+  .quiz-head p { color: var(--ink-muted); margin-top: 2px; }
+
+  .questions { list-style: none; margin: 20px 0 0; padding: 0; display: grid; gap: 20px; counter-reset: q; }
+  .questions > li { counter-increment: q; }
+  fieldset { border: 0; margin: 0; padding: 0; min-width: 0; }
+  legend { font-weight: 600; padding: 0; margin-bottom: 10px; display: flex; gap: 10px; }
+  legend::before {
+    content: counter(q);
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 999px;
+    background: var(--brand-tint);
+    color: var(--brand-deep);
+    font-size: 13px;
+  }
+
+  .options { display: grid; gap: 8px; }
+  .option {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px 14px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-field);
+    cursor: pointer;
+    transition: border-color 150ms ease-out, background-color 150ms ease-out;
+  }
+  .option:hover { border-color: var(--brand-soft); }
+  .option:has(input:checked) { border-color: var(--brand); background: var(--brand-tint); }
+  .option input { accent-color: var(--brand-deep); margin: 4px 0 0; width: 18px; height: 18px; flex: none; }
+  fieldset:disabled .option { cursor: default; }
+  fieldset:disabled .option:hover { border-color: var(--line); }
+  .is-right .option:has(input:checked) { border-color: var(--success); background: var(--success-tint); }
+  .is-wrong .option:has(input:checked) { border-color: var(--accent); background: var(--accent-tint); }
+
+  .why { display: none; gap: 8px; margin-top: 10px; font-size: 14px; }
+  .why svg { width: 20px; height: 20px; flex: none; margin-top: 2px; }
+  .is-right .why, .is-wrong .why { display: flex; }
+  .is-right .why { color: var(--success-deep); }
+  .is-wrong .why { color: var(--accent-deep); }
+  .is-right .mark-wrong, .is-wrong .mark-right { display: none; }
+
+  .status { margin-top: 16px; font-weight: 600; min-height: 1px; }
+  .status:empty { margin-top: 0; }
+  .actions { display: flex; gap: 8px; margin-top: 16px; }
+
+  /* Without JavaScript the form cannot check answers: hide it. */
+  form:not(.is-ready) .actions { display: none; }
+  .noscript { margin-top: 12px; color: var(--ink-muted); }
+
+  .success {
+    display: grid;
+    justify-items: center;
+    gap: 12px;
+    margin-top: 8px;
+    padding: 24px;
+    border-radius: var(--radius-card);
+    background: var(--brand-tint);
+    text-align: center;
+  }
+  .success[hidden] { display: none; }
+  .success-icon {
+    display: grid;
+    place-items: center;
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    background: var(--brand-deep);
+    color: #fff;
+  }
+  .success-icon svg { width: 28px; height: 28px; }
+  .success-title { font-size: 18px; font-weight: 600; }
+</style>

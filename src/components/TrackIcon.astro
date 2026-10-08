@@ -1,0 +1,60 @@
+---
+/**
+ * Track icons, drawn in the store's category-icon recipe
+ * (apps/storefront/src/components/category/group-icons.tsx): 32px viewBox,
+ * flat fills, two tones per subject, no strokes.
+ */
+interface Props {
+  track: string;
+  class?: string;
+}
+const { track, class: className } = Astro.props;
+---
+
+<svg viewBox="0 0 32 32" aria-hidden="true" class={className}>
+  {track === 'plomberie' && (
+    <>
+      {/* tap: handle, body, spout, then a falling drop */}
+      <rect x="9" y="3" width="10" height="3.4" rx="1.7" fill="#3fa69e" />
+      <rect x="12.6" y="5.6" width="2.8" height="4" fill="#3fa69e" />
+      <path d="M4 10.2h14.6a6.4 6.4 0 0 1 6.4 6.4v1.8h-5.2v-1.6a1.4 1.4 0 0 0-1.4-1.4H4Z" fill="#65cbc4" />
+      <rect x="2.4" y="9.2" width="3.4" height="7.2" rx="1.2" fill="#3fa69e" />
+      <path d="M22.4 21.2s-3.4 3.9-3.4 6a3.4 3.4 0 0 0 6.8 0c0-2.1-3.4-6-3.4-6Z" fill="#3b9fe0" />
+      <circle cx="21.1" cy="26.8" r="1" fill="#bfe3f8" />
+    </>
+  )}
+  {track === 'electricite' && (
+    <>
+      {/* plug: two pins, body, cable */}
+      <rect x="10" y="2.4" width="3" height="7" rx="1.5" fill="#8b95a5" />
+      <rect x="19" y="2.4" width="3" height="7" rx="1.5" fill="#8b95a5" />
+      <path d="M7 9h18v5.6a9 9 0 0 1-18 0Z" fill="#f5a623" />
+      <path d="M7 9h9v14.6a9 9 0 0 1-9-9Z" fill="#fbcd6b" />
+      <path d="M17.4 12.4 13.6 18h3l-1 4.2 4-5.8h-3Z" fill="#fff" />
+      <rect x="14" y="23" width="4" height="7" rx="2" fill="#2b3445" />
+    </>
+  )}
+  {track === 'climatisation' && (
+    <>
+      {/* split unit with cold air coming out */}
+      <rect x="2.6" y="4" width="26.8" height="12" rx="3.6" fill="#dff4f2" />
+      <rect x="2.6" y="4" width="26.8" height="5.4" rx="2.7" fill="#65cbc4" />
+      <rect x="6" y="12" width="20" height="1.8" rx="0.9" fill="#3fa69e" />
+      <circle cx="25.4" cy="6.7" r="1.1" fill="#e7464e" />
+      <rect x="7" y="18.6" width="3" height="9.6" rx="1.5" fill="#7cc4f0" />
+      <rect x="14.5" y="18.6" width="3" height="11.4" rx="1.5" fill="#3b9fe0" />
+      <rect x="22" y="18.6" width="3" height="9.6" rx="1.5" fill="#7cc4f0" />
+    </>
+  )}
+  {track === 'magie' && (
+    <>
+      {/* two fanned cards and a sparkle */}
+      <rect x="4.2" y="7.6" width="13.6" height="19.4" rx="2.4" transform="rotate(-14 11 17.3)" fill="#e7464e" />
+      <rect x="6.4" y="10" width="9.2" height="14.6" rx="1.4" transform="rotate(-14 11 17.3)" fill="#f2a9a5" />
+      <rect x="13.2" y="7.6" width="13.6" height="19.4" rx="2.4" transform="rotate(10 19.4 16.5)" fill="#2b3445" fill-opacity="0.14" />
+      <rect x="12.6" y="6.8" width="13.6" height="19.4" rx="2.4" transform="rotate(10 19.4 16.5)" fill="#fff" />
+      <path d="M19.6 12.4c-2 2.2-4.4 3.6-4.4 5.6a2.2 2.2 0 0 0 3.6 1.7l-.8 2.7h3.2l-.8-2.7a2.2 2.2 0 0 0 3.6-1.7c0-2-2.4-3.4-4.4-5.6Z" transform="rotate(10 19.4 16.5)" fill="#2b3445" />
+      <path d="M27 2.4l.9 2.3 2.3.9-2.3.9-.9 2.3-.9-2.3-2.3-.9 2.3-.9Z" fill="#f5a623" />
+    </>
+  )}
+</svg>

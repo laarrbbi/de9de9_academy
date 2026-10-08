@@ -1,0 +1,202 @@
+/*
+ * De9De9 design tokens, copied from the store
+ * (laarrbbi/de9de9: docs/design/DESIGN-SYSTEM.md and
+ * apps/storefront/src/app/globals.css). Keep them in step with the store.
+ *
+ * Layout uses logical properties (inline-start/end) so Arabic mirrors itself.
+ */
+:root {
+  --brand: #65cbc4;
+  --brand-dark: #3fa69e;
+  --brand-soft: #a9e2dd;
+  --brand-tint: #dff4f2;
+  --brand-deep: #1f8079; /* teal text that passes AA on white */
+  --accent: #e7464e;
+  --accent-soft: #f2a9a5;
+  --accent-tint: #fdedee;
+  --accent-deep: #ce2f38;
+
+  --canvas: #f7f8f9;
+  --surface: #ffffff;
+  --ink: #2b3445;
+  --ink-muted: #6b7587; /* store's #8b95a5 is too light for body copy at 15px */
+  --ink-faint: #b9c1cc;
+  --line: #e8ecf0;
+
+  --success: #4cc38a;
+  --success-tint: #e8f7f0;
+  --success-deep: #207f55;
+  --warning: #f5a623;
+  --warning-tint: #fdf1de;
+  --warning-deep: #9a6300;
+
+  --shadow-card: 0 6px 24px rgba(43, 52, 69, 0.07);
+  --shadow-pop: 0 16px 48px rgba(33, 37, 41, 0.18);
+  --radius-card: 16px;
+  --radius-field: 10px;
+  --radius-panel: 24px;
+
+  --font-latin: 'Poppins', 'Cairo', ui-sans-serif, system-ui, sans-serif;
+  --font-arabic: 'Cairo', 'Poppins', ui-sans-serif, system-ui, sans-serif;
+
+  --gutter: 16px;
+  --page: 1120px;
+  --read: 720px;
+}
+
+@media (min-width: 720px) {
+  :root { --gutter: 32px; }
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-padding-top: 88px;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--canvas);
+  color: var(--ink);
+  font-family: var(--font-latin);
+  font-size: 15px;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+
+[dir='rtl'] body { font-family: var(--font-arabic); font-size: 16px; line-height: 1.8; }
+
+main { flex: 1; }
+
+img, svg { display: block; max-width: 100%; }
+
+/* Components set display on buttons and panels; `hidden` must still win. */
+[hidden] { display: none !important; }
+
+a { color: var(--brand-deep); text-underline-offset: 3px; }
+
+h1, h2, h3 { line-height: 1.25; margin: 0; text-wrap: balance; }
+
+p { margin: 0; }
+
+:focus-visible { outline: 2px solid var(--brand-dark); outline-offset: 2px; border-radius: 4px; }
+
+.wrap {
+  width: 100%;
+  max-width: calc(var(--page) + 2 * var(--gutter));
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+.wrap-read {
+  max-width: calc(var(--read) + 2 * var(--gutter));
+}
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+}
+
+/* Mirror direction-bearing glyphs (arrows, chevrons) in Arabic. */
+[dir='rtl'] .flip { transform: scaleX(-1); }
+
+/* ---------- Buttons ---------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 10px 20px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.2;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 150ms ease-out, box-shadow 150ms ease-out, transform 150ms ease-out;
+}
+.btn svg { width: 18px; height: 18px; flex: none; }
+.btn-primary { background: var(--brand-deep); color: #fff; }
+.btn-primary:hover { background: #186a64; }
+.btn-white { background: #fff; color: var(--brand-deep); }
+.btn-white:hover { box-shadow: var(--shadow-card); }
+.btn-outline { background: var(--surface); color: var(--ink); border-color: var(--line); }
+.btn-outline:hover { border-color: var(--brand); color: var(--brand-deep); }
+.btn-ghost-white { background: transparent; color: #fff; border-color: rgba(255, 255, 255, 0.7); }
+.btn-ghost-white:hover { background: rgba(255, 255, 255, 0.12); }
+.btn[disabled] { opacity: 0.55; cursor: not-allowed; }
+
+/* ---------- Cards and chips ---------- */
+.card {
+  background: var(--surface);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.5;
+  white-space: nowrap;
+}
+.chip svg { width: 14px; height: 14px; }
+.chip-neutral { background: var(--canvas); color: var(--ink-muted); }
+.chip-teal { background: var(--brand-tint); color: var(--brand-deep); }
+.chip-low { background: var(--success-tint); color: var(--success-deep); }
+.chip-medium { background: var(--warning-tint); color: var(--warning-deep); }
+.chip-high { background: var(--accent-tint); color: var(--accent-deep); }
+
+.eyebrow {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+[dir='rtl'] .eyebrow { letter-spacing: 0; }
+
+.icon-chip {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  background: var(--brand-tint);
+}
+.icon-chip svg { width: 34px; height: 34px; }
+
+.progress {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--line);
+  overflow: hidden;
+}
+.progress > i {
+  display: block;
+  height: 100%;
+  width: 0;
+  border-radius: inherit;
+  background: var(--brand);
+  transition: width 300ms ease-out;
+}
+
+.section-title { color: var(--brand-deep); font-size: 24px; font-weight: 600; }
+@media (min-width: 720px) { .section-title { font-size: 28px; } }
+.section-lead { color: var(--ink-muted); margin-top: 6px; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition-duration: 0ms !important; animation-duration: 0ms !important; }
+}

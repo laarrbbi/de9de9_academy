@@ -1,0 +1,124 @@
+---
+import Base from '../../../layouts/Base.astro';
+import TrackIcon from '../../../components/TrackIcon.astro';
+import LessonMeta from '../../../components/LessonMeta.astro';
+import { TRACKS } from '../../../data/tracks';
+import { SHELVES, shelfUrl } from '../../../data/shelves';
+import { LOCALES, t, type Locale } from '../../../i18n/ui';
+import { getTrackLessons, lessonUrl } from '../../../lib/lessons';
+
+export async function getStaticPaths() {
+  const paths = [];
+  for (const locale of LOCALES) {
+    for (const track of TRACKS) {
+      if ((await getTrackLessons(locale, track.id)).length > 0) {
+        paths.push({ params: { locale, track: track.id } });
+      }
+    }
+  }
+  return paths;
+}
+
+const locale = Astro.params.locale as Locale;
+const track = TRACKS.find((x) => x.id === Astro.params.track)!;
+const lessons = await getTrackLessons(locale, track.id);
+const shelf = SHELVES[track.shelf];
+---
+
+<Base locale={locale} title={track.name[locale]} description={track.tagline[locale]}>
+  <div class="wrap wrap-read page">
+    <nav class="crumbs" aria-label={t(locale, 'nav.breadcrumb')}>
+      <a href={`/${locale}/`}>{t(locale, 'nav.home')}</a>
+      <span aria-hidden="true">/</span>
+      <span aria-current="page">{track.name[locale]}</span>
+    </nav>
+
+    <header class="track-head card" data-progress={lessons.map((l) => l.key).join(' ')}>
+      <div class="head-top">
+        <span class="icon-chip big"><TrackIcon track={track.id} /></span>
+        <div>
+          <p class="eyebrow">{track.group[locale]}</p>
+          <h1>{track.name[locale]}</h1>
+        </div>
+      </div>
+      <p class="tagline">{track.tagline[locale]}</p>
+      <div class="head-progress">
+        <span><span data-progress-count>0</span>/{lessons.length} {t(locale, 'track.done')}</span>
+        <div class="progress"><i data-progress-bar></i></div>
+      </div>
+      <div class="head-ctas">
+        <a class="btn btn-primary" href={lessonUrl(lessons[0]!)}>{t(locale, 'track.start')}</a>
+        <a class="btn btn-outline" href={shelfUrl(track.shelf, locale, track.id)}>
+          {t(locale, 'track.shop')} « {shelf.name[locale]} »
+        </a>
+      </div>
+    </header>
+
+    <ol class="lessons">
+      {lessons.map((lesson, i) => (
+        <li>
+          <a class="lesson card" href={lessonUrl(lesson)} data-lesson-key={lesson.key}>
+            <span class="num" aria-hidden="true">
+              <span class="num-n">{i + 1}</span>
+              <svg class="num-done" viewBox="0 0 20 20"><path d="m5 10.5 3.2 3.2L15 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" /></svg>
+            </span>
+            <span class="lesson-body">
+              <span class="lesson-title">{lesson.entry.data.title}</span>
+              <span class="lesson-summary">{lesson.entry.data.summary}</span>
+              <LessonMeta locale={locale} minutes={lesson.entry.data.minutes} level={lesson.entry.data.level} risk={lesson.entry.data.risk} />
+            </span>
+            <svg class="flip chev" viewBox="0 0 20 20" aria-hidden="true"><path d="M8 5l5 5-5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
+          </a>
+        </li>
+      ))}
+    </ol>
+  </div>
+</Base>
+
+<style>
+  .page { margin-top: 20px; }
+  .crumbs { display: flex; flex-wrap: wrap; gap: 8px; font-size: 13px; color: var(--ink-muted); }
+  .crumbs a { color: var(--ink-muted); }
+  .crumbs [aria-current] { color: var(--ink); font-weight: 500; }
+
+  .track-head { margin-top: 16px; padding: 24px 22px; display: grid; gap: 14px; }
+  @media (min-width: 720px) { .track-head { padding: 32px; } }
+  .head-top { display: flex; align-items: center; gap: 16px; }
+  .icon-chip.big { width: 72px; height: 72px; border-radius: 18px; }
+  .icon-chip.big svg { width: 44px; height: 44px; }
+  .track-head h1 { font-size: 28px; font-weight: 600; }
+  .tagline { color: var(--ink-muted); font-size: 16px; }
+  .head-progress { display: grid; gap: 6px; font-size: 13px; color: var(--ink-muted); font-weight: 500; }
+  .head-ctas { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 4px; }
+
+  .lessons { list-style: none; margin: 24px 0 0; padding: 0; display: grid; gap: 12px; }
+  .lesson {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 18px;
+    color: inherit;
+    text-decoration: none;
+    transition: box-shadow 150ms ease-out;
+  }
+  .lesson:hover { box-shadow: 0 10px 32px rgba(43, 52, 69, 0.12); }
+  .num {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 36px;
+    height: 36px;
+    border-radius: 999px;
+    background: var(--brand-tint);
+    color: var(--brand-deep);
+    font-weight: 600;
+  }
+  .num-done { display: none; width: 20px; height: 20px; }
+  .is-done .num { background: var(--success); color: #fff; }
+  .is-done .num-n { display: none; }
+  .is-done .num-done { display: block; }
+  .lesson-body { display: grid; gap: 6px; flex: 1; min-width: 0; }
+  .lesson-title { font-size: 16px; font-weight: 600; }
+  .lesson-summary { color: var(--ink-muted); font-size: 14px; }
+  .chev { width: 20px; height: 20px; flex: none; margin-top: 8px; color: var(--brand-deep); }
+</style>

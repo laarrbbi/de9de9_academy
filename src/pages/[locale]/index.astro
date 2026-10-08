@@ -1,0 +1,265 @@
+---
+import Base from '../../layouts/Base.astro';
+import TrackIcon from '../../components/TrackIcon.astro';
+import { TRACKS } from '../../data/tracks';
+import { STORE_URL } from '../../config';
+import { LOCALES, t, type Locale } from '../../i18n/ui';
+import { getLessons, trackUrl } from '../../lib/lessons';
+
+export function getStaticPaths() {
+  return LOCALES.map((locale) => ({ params: { locale } }));
+}
+
+const locale = Astro.params.locale as Locale;
+const lessons = await getLessons(locale);
+const tracks = TRACKS.map((track) => ({
+  track,
+  lessons: lessons.filter((l) => l.track.id === track.id),
+})).filter((x) => x.lessons.length > 0);
+const firstLesson = lessons[0];
+---
+
+<Base locale={locale}>
+  <section class="wrap hero-wrap">
+    <div class="hero">
+      <div class="hero-copy">
+        <p class="hero-eyebrow">{t(locale, 'home.eyebrow')}</p>
+        <h1>{t(locale, 'home.title')}</h1>
+        <p class="hero-lead">{t(locale, 'home.lead')}</p>
+        <div class="hero-ctas">
+          <a class="btn btn-white" href="#parcours">{t(locale, 'home.cta')}</a>
+          <a class="btn btn-ghost-white" href={`${STORE_URL}/${locale}?utm_source=academy&utm_medium=hero`}>
+            {t(locale, 'nav.store')}
+          </a>
+        </div>
+      </div>
+
+      <div class="hero-art" aria-hidden="true">
+        <svg class="arch" viewBox="0 0 240 220">
+          <defs>
+            <linearGradient id="arch-g" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#e7464e" />
+              <stop offset="1" stop-color="#f2a9a5" />
+            </linearGradient>
+          </defs>
+          <path d="M20 220V112L120 28l100 84v108Z" fill="url(#arch-g)" />
+          <path d="M8 116 120 22l112 94" fill="none" stroke="#e7464e" stroke-width="16" stroke-linecap="round" stroke-linejoin="round" />
+          <rect x="176" y="20" width="16" height="42" rx="8" fill="#e7464e" />
+        </svg>
+        <img class="hero-mark" src="/logo-mark-white.png" alt="" width="120" height="107" />
+        {firstLesson && (
+          <div class="float float-lesson">
+            <span class="float-chip"><TrackIcon track={firstLesson.track.id} /></span>
+            <span>
+              <small>{t(locale, 'home.cardLesson')} 1 · {firstLesson.entry.data.minutes} {t(locale, 'lesson.minutes')}</small>
+              <strong>{firstLesson.entry.data.title}</strong>
+            </span>
+          </div>
+        )}
+        <div class="float float-progress" data-progress={lessons.map((l) => l.key).join(' ')}>
+          <small>{t(locale, 'home.cardProgress')}</small>
+          <strong><span dir="ltr"><span data-progress-count>0</span> / {lessons.length}</span></strong>
+          <div class="progress"><i data-progress-bar></i></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="parcours" class="wrap block">
+    <h2 class="section-title">{t(locale, 'home.tracksTitle')}</h2>
+    <p class="section-lead">{t(locale, 'home.tracksLead')}</p>
+    <ul class="tracks">
+      {tracks.map(({ track, lessons: trackLessons }) => (
+        <li>
+          <a class="track card" href={trackUrl(locale, track.id)} data-progress={trackLessons.map((l) => l.key).join(' ')}>
+            <div class="track-top">
+              <span class="icon-chip"><TrackIcon track={track.id} /></span>
+              <span class="eyebrow">{track.group[locale]}</span>
+            </div>
+            <h3>{track.name[locale]}</h3>
+            <p class="track-tagline">{track.tagline[locale]}</p>
+            <div class="track-foot">
+              <span>
+                {trackLessons.length} {t(locale, 'track.lessons')} ·{' '}
+                <span data-progress-count>0</span>/{trackLessons.length} {t(locale, 'track.done')}
+              </span>
+              <svg class="flip chev" viewBox="0 0 20 20" aria-hidden="true"><path d="M8 5l5 5-5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
+            </div>
+            <div class="progress"><i data-progress-bar></i></div>
+          </a>
+        </li>
+      ))}
+    </ul>
+  </section>
+
+  <section class="wrap block">
+    <h2 class="section-title center">{t(locale, 'home.howTitle')}</h2>
+    <ul class="how">
+      <li class="card">
+        <span class="icon-chip"><svg viewBox="0 0 32 32"><path d="M5 7.5c3.6-1.6 7.3-1.6 11 .8v17.4c-3.7-2.4-7.4-2.4-11-.8Z" fill="#65cbc4" /><path d="M27 7.5c-3.6-1.6-7.3-1.6-11 .8v17.4c3.7-2.4 7.4-2.4 11-.8Z" fill="#3fa69e" /></svg></span>
+        <h3>{t(locale, 'home.how1.title')}</h3>
+        <p>{t(locale, 'home.how1.body')}</p>
+      </li>
+      <li class="card">
+        <span class="icon-chip"><svg viewBox="0 0 32 32"><circle cx="16" cy="16" r="12" fill="#4cc38a" /><path d="m10.5 16.4 3.6 3.6 7.4-7.6" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" /></svg></span>
+        <h3>{t(locale, 'home.how2.title')}</h3>
+        <p>{t(locale, 'home.how2.body')}</p>
+      </li>
+      <li class="card">
+        <span class="icon-chip"><svg viewBox="0 0 32 32"><path d="M6 11h20l-1.6 16.4H7.6Z" fill="#e7464e" /><path d="M6 11h10v16.4H7.6Z" fill="#f2a9a5" /><path d="M11.5 11V9.5a4.5 4.5 0 0 1 9 0V11" fill="none" stroke="#2b3445" stroke-width="2.4" stroke-linecap="round" /></svg></span>
+        <h3>{t(locale, 'home.how3.title')}</h3>
+        <p>{t(locale, 'home.how3.body')}</p>
+      </li>
+    </ul>
+  </section>
+
+  <section class="wrap block">
+    <div class="store-banner">
+      <div>
+        <h2>{t(locale, 'home.storeTitle')}</h2>
+        <p>{t(locale, 'home.storeBody')}</p>
+      </div>
+      <a class="btn btn-primary" href={`${STORE_URL}/${locale}?utm_source=academy&utm_medium=banner`}>
+        {t(locale, 'home.storeCta')}
+      </a>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .hero-wrap { margin-top: 20px; }
+  .hero {
+    position: relative;
+    overflow: hidden;
+    display: grid;
+    gap: 24px;
+    padding: 32px 22px 28px;
+    border-radius: var(--radius-panel);
+    background: var(--brand-deep);
+    color: #fff;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset-inline-end: -120px;
+    top: -140px;
+    width: 420px;
+    height: 420px;
+    border-radius: 50%;
+    background: var(--brand);
+    opacity: 0.35;
+  }
+  @media (min-width: 900px) {
+    .hero { grid-template-columns: 1.15fr 1fr; align-items: center; padding: 56px 56px 48px; }
+  }
+  .hero-copy { position: relative; }
+  .hero-eyebrow {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.16);
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .hero h1 { margin-top: 14px; font-size: 32px; font-weight: 600; letter-spacing: -0.01em; }
+  @media (min-width: 720px) { .hero h1 { font-size: 42px; } }
+  :global([dir='rtl']) .hero h1 { letter-spacing: 0; font-weight: 700; }
+  .hero-lead { margin-top: 14px; max-width: 52ch; font-size: 16px; opacity: 0.95; }
+  .hero-ctas { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 24px; }
+
+  .hero-art { position: relative; height: 260px; }
+  /* On phones the copy and buttons are the hero; the illustration would push them apart. */
+  @media (max-width: 599px) { .hero-art { display: none; } }
+  /* Centred with auto margins, which work the same in both directions. */
+  .arch { position: absolute; inset-inline: 0; bottom: -28px; width: 240px; margin-inline: auto; }
+  .hero-mark { position: absolute; inset-inline: 0; bottom: 34px; width: 112px; margin-inline: auto; }
+
+  .float {
+    position: absolute;
+    display: grid;
+    gap: 6px;
+    padding: 12px 14px;
+    border-radius: 14px;
+    background: #fff;
+    color: var(--ink);
+    box-shadow: var(--shadow-pop);
+    font-size: 13px;
+    line-height: 1.35;
+  }
+  .float small { color: var(--ink-muted); font-size: 12px; }
+  .float strong { font-weight: 600; }
+  .float-lesson {
+    inset-inline-start: 0;
+    top: 6px;
+    grid-template-columns: auto 1fr;
+    align-items: center;
+    gap: 10px;
+    max-width: 230px;
+  }
+  .float-lesson > span:last-child { display: grid; gap: 2px; }
+  .float-chip { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 10px; background: var(--brand-tint); }
+  .float-chip svg { width: 26px; height: 26px; }
+  .float-progress { inset-inline-end: 0; bottom: 18px; width: 170px; }
+  .float-progress strong { font-size: 20px; }
+
+  .block { margin-top: 56px; }
+  .center { text-align: center; }
+
+  .tracks {
+    list-style: none;
+    margin: 24px 0 0;
+    padding: 0;
+    display: grid;
+    gap: 16px;
+  }
+  @media (min-width: 720px) { .tracks { grid-template-columns: 1fr 1fr; gap: 20px; } }
+  .track {
+    display: grid;
+    gap: 10px;
+    height: 100%;
+    padding: 22px;
+    color: inherit;
+    text-decoration: none;
+    transition: box-shadow 150ms ease-out, transform 150ms ease-out;
+  }
+  .track:hover { box-shadow: 0 10px 32px rgba(43, 52, 69, 0.12); transform: translateY(-2px); }
+  .track-top { display: flex; align-items: center; justify-content: space-between; }
+  .track h3 { font-size: 20px; font-weight: 600; margin-top: 4px; }
+  .track-tagline { color: var(--ink-muted); }
+  .track-foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 6px;
+    color: var(--ink-muted);
+    font-size: 13px;
+    font-weight: 500;
+  }
+  .chev { width: 20px; height: 20px; color: var(--brand-deep); }
+
+  .how {
+    list-style: none;
+    margin: 24px 0 0;
+    padding: 0;
+    display: grid;
+    gap: 16px;
+  }
+  @media (min-width: 720px) { .how { grid-template-columns: repeat(3, 1fr); } }
+  .how li { padding: 24px 22px; display: grid; gap: 8px; justify-items: start; }
+  .how h3 { font-size: 17px; font-weight: 600; margin-top: 6px; }
+  .how p { color: var(--ink-muted); }
+
+  .store-banner {
+    display: grid;
+    gap: 16px;
+    align-items: center;
+    padding: 28px 24px;
+    border-radius: var(--radius-panel);
+    background: var(--accent-tint);
+  }
+  @media (min-width: 720px) {
+    .store-banner { grid-template-columns: 1fr auto; padding: 32px 40px; }
+  }
+  .store-banner h2 { font-size: 22px; font-weight: 600; color: var(--accent-deep); }
+  .store-banner p { margin-top: 4px; color: var(--ink); }
+</style>

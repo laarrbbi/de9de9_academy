@@ -1,0 +1,27 @@
+---
+import { t, type Locale } from '../i18n/ui';
+
+interface Props {
+  locale: Locale;
+  minutes: number;
+  level: 'beginner' | 'intermediate';
+  risk: 'low' | 'medium' | 'high';
+}
+const { locale, minutes, level, risk } = Astro.props;
+---
+
+<ul class="meta">
+  <li class="chip chip-neutral">
+    <svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.2" fill="none" stroke="currentColor" stroke-width="1.6" /><path d="M8 4.6V8l2.4 1.6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" /></svg>
+    {minutes} {t(locale, 'lesson.minutes')}
+  </li>
+  <li class="chip chip-teal">{t(locale, `lesson.level.${level}`)}</li>
+  <li class={`chip chip-${risk}`}>
+    <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.6 2.6 3.8v3.8c0 3.2 2.3 5.8 5.4 6.8 3.1-1 5.4-3.6 5.4-6.8V3.8Z" fill="currentColor" /></svg>
+    {t(locale, `lesson.risk.${risk}`)}
+  </li>
+</ul>
+
+<style>
+  .meta { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+</style>

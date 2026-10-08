@@ -1,0 +1,42 @@
+---
+import Base from '../layouts/Base.astro';
+import { t } from '../i18n/ui';
+---
+
+<Base locale="fr" title={t('fr', 'notFound.title')}>
+  <section class="wrap wrap-read nf">
+    <svg class="nf-art" viewBox="0 0 240 180" aria-hidden="true">
+      <defs>
+        <linearGradient id="nf-g" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#e7464e" />
+          <stop offset="1" stop-color="#f2a9a5" />
+        </linearGradient>
+      </defs>
+      <path d="M40 180V100l80-64 80 64v80Z" fill="url(#nf-g)" />
+      <rect x="84" y="96" width="72" height="52" rx="10" fill="#fff" />
+      <rect x="96" y="110" width="48" height="6" rx="3" fill="#dff4f2" />
+      <rect x="96" y="124" width="30" height="6" rx="3" fill="#a9e2dd" />
+    </svg>
+    <div class="nf-langs">
+      <div>
+        <h1>{t('fr', 'notFound.title')}</h1>
+        <p>{t('fr', 'notFound.body')}</p>
+        <a class="btn btn-primary" href="/fr/">{t('fr', 'notFound.cta')}</a>
+      </div>
+      <div lang="ar" dir="rtl">
+        <h2>{t('ar', 'notFound.title')}</h2>
+        <p>{t('ar', 'notFound.body')}</p>
+        <a class="btn btn-outline" href="/ar/">{t('ar', 'notFound.cta')}</a>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .nf { margin-top: 48px; text-align: center; }
+  .nf-art { width: 200px; margin-inline: auto; }
+  .nf-langs { display: grid; gap: 32px; margin-top: 24px; }
+  .nf h1, .nf h2 { font-size: 24px; font-weight: 600; }
+  .nf p { color: var(--ink-muted); margin: 6px 0 16px; }
+  [lang='ar'] { font-family: var(--font-arabic); }
+</style>

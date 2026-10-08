@@ -1,0 +1,258 @@
+---
+import { render } from 'astro:content';
+import Base from '../../../layouts/Base.astro';
+import LessonMeta from '../../../components/LessonMeta.astro';
+import Quiz from '../../../components/Quiz.astro';
+import { SERVICES_URL } from '../../../config';
+import { shelfUrl } from '../../../data/shelves';
+import { LOCALES, t } from '../../../i18n/ui';
+import { getLessons, lessonUrl, trackUrl, type Lesson } from '../../../lib/lessons';
+
+export async function getStaticPaths() {
+  const paths = [];
+  for (const locale of LOCALES) {
+    const lessons = await getLessons(locale);
+    for (const lesson of lessons) {
+      const siblings = lessons.filter((l) => l.track.id === lesson.track.id);
+      const index = siblings.indexOf(lesson);
+      paths.push({
+        params: { locale, track: lesson.track.id, lesson: lesson.slug },
+        props: { lesson, index, prev: siblings[index - 1], next: siblings[index + 1], total: siblings.length },
+      });
+    }
+  }
+  return paths;
+}
+
+interface Props {
+  lesson: Lesson;
+  index: number;
+  prev?: Lesson;
+  next?: Lesson;
+  total: number;
+}
+
+const { lesson, index, prev, next, total } = Astro.props;
+const { locale, track } = lesson;
+const data = lesson.entry.data;
+const { Content } = await render(lesson.entry);
+const quizNext = next
+  ? { href: lessonUrl(next), label: t(locale, 'lesson.next') }
+  : { href: trackUrl(locale, track.id), label: t(locale, 'lesson.backToTrack') };
+---
+
+<Base locale={locale} title={data.title} description={data.summary}>
+  <article class="wrap wrap-read page">
+    <nav class="crumbs" aria-label={t(locale, 'nav.breadcrumb')}>
+      <a href={`/${locale}/`}>{t(locale, 'nav.home')}</a>
+      <span aria-hidden="true">/</span>
+      <a href={trackUrl(locale, track.id)}>{track.name[locale]}</a>
+      <span aria-hidden="true">/</span>
+      <span aria-current="page">{t(locale, 'track.lesson')} {index + 1}/{total}</span>
+    </nav>
+
+    <header class="lesson-head" data-lesson-key={lesson.key}>
+      <p class="eyebrow">{track.name[locale]} · {t(locale, 'track.lesson')} {index + 1}</p>
+      <h1>{data.title}</h1>
+      <p class="lead">{data.summary}</p>
+      <div class="head-meta">
+        <LessonMeta locale={locale} minutes={data.minutes} level={data.level} risk={data.risk} />
+        <span class="chip chip-low done-chip">✓ {t(locale, 'lesson.isDone')}</span>
+      </div>
+    </header>
+
+    {data.safety && (
+      <aside class={`safety risk-${data.risk}`} aria-label={t(locale, 'lesson.safety')}>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.4 4 5.6v5.6c0 4.8 3.4 8.8 8 10.4 4.6-1.6 8-5.6 8-10.4V5.6Z" fill="currentColor" /><path d="M12 7.5v5.5" stroke="#fff" stroke-width="2.2" stroke-linecap="round" /><circle cx="12" cy="16.3" r="1.3" fill="#fff" /></svg>
+        <div>
+          <p class="safety-title">{t(locale, 'lesson.safety')}</p>
+          <p>{data.safety}</p>
+        </div>
+      </aside>
+    )}
+
+    <section class="tools card" aria-labelledby="tools-title">
+      <h2 id="tools-title">{t(locale, 'lesson.tools')}</h2>
+      <ul>
+        {data.tools.map((tool) => (
+          <li>
+            <span>{tool.name}</span>
+            {tool.shelf && (
+              <a href={shelfUrl(tool.shelf, locale, `${track.id}-${lesson.slug}`)}>
+                {t(locale, 'lesson.toolsShop')}
+                <svg class="flip" viewBox="0 0 20 20" aria-hidden="true"><path d="M7 13 13 7m-5 0h5v5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" /></svg>
+              </a>
+            )}
+          </li>
+        ))}
+      </ul>
+    </section>
+
+    <div class="prose">
+      <Content />
+    </div>
+
+    {data.callAPro.length > 0 && (
+      <section class="pro" aria-labelledby="pro-title">
+        <h2 id="pro-title">{t(locale, 'lesson.pro')}</h2>
+        <ul>
+          {data.callAPro.map((sign) => <li>{sign}</li>)}
+        </ul>
+        <a class="btn btn-outline" href={SERVICES_URL}>{t(locale, 'lesson.proCta')}</a>
+      </section>
+    )}
+
+    <Quiz locale={locale} lessonKey={lesson.key} quiz={data.quiz} next={quizNext} />
+
+    <nav class="pager" aria-label={track.name[locale]}>
+      {prev ? (
+        <a class="pager-link" href={lessonUrl(prev)}>
+          <small>
+            <svg class="flip" viewBox="0 0 20 20" aria-hidden="true"><path d="M12 5 7 10l5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
+            {t(locale, 'lesson.prev')}
+          </small>
+          <span>{prev.entry.data.title}</span>
+        </a>
+      ) : <span />}
+      {next ? (
+        <a class="pager-link end" href={lessonUrl(next)}>
+          <small>
+            {t(locale, 'lesson.next')}
+            <svg class="flip" viewBox="0 0 20 20" aria-hidden="true"><path d="M8 5l5 5-5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
+          </small>
+          <span>{next.entry.data.title}</span>
+        </a>
+      ) : (
+        <a class="pager-link end" href={trackUrl(locale, track.id)}>
+          <small>{t(locale, 'lesson.backToTrack')}</small>
+          <span>{track.name[locale]}</span>
+        </a>
+      )}
+    </nav>
+  </article>
+</Base>
+
+<style>
+  .page { margin-top: 20px; }
+  .crumbs { display: flex; flex-wrap: wrap; gap: 8px; font-size: 13px; color: var(--ink-muted); }
+  .crumbs a { color: var(--ink-muted); }
+  .crumbs [aria-current] { color: var(--ink); font-weight: 500; }
+
+  .lesson-head { margin-top: 20px; display: grid; gap: 10px; }
+  .lesson-head h1 { font-size: 28px; font-weight: 600; letter-spacing: -0.01em; }
+  @media (min-width: 720px) { .lesson-head h1 { font-size: 34px; } }
+  :global([dir='rtl']) .lesson-head h1 { letter-spacing: 0; font-weight: 700; }
+  .lead { font-size: 17px; color: var(--ink-muted); }
+  .head-meta { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+  .done-chip { display: none; }
+  .is-done .done-chip { display: inline-flex; }
+
+  .safety {
+    display: flex;
+    gap: 14px;
+    margin-top: 24px;
+    padding: 18px 20px;
+    border-radius: var(--radius-card);
+    border-inline-start: 4px solid currentColor;
+  }
+  .safety svg { width: 28px; height: 28px; flex: none; }
+  .safety.risk-medium { background: var(--warning-tint); color: var(--warning-deep); }
+  .safety.risk-high { background: var(--accent-tint); color: var(--accent-deep); }
+  .safety p { color: var(--ink); }
+  .safety .safety-title { color: inherit; font-weight: 600; margin-bottom: 2px; }
+
+  .tools { margin-top: 20px; padding: 20px 22px; }
+  .tools h2, .pro h2 { font-size: 17px; font-weight: 600; }
+  .tools ul { list-style: none; margin: 10px 0 0; padding: 0; }
+  .tools li {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 4px 12px;
+    padding: 10px 0;
+    border-top: 1px solid var(--line);
+  }
+  .tools li:first-child { border-top: 0; }
+  .tools a {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .tools a:hover { text-decoration: underline; }
+  .tools a svg { width: 16px; height: 16px; }
+
+  .pro {
+    margin-top: 32px;
+    padding: 20px 22px;
+    border: 1px solid var(--accent-soft);
+    border-radius: var(--radius-card);
+    background: var(--surface);
+  }
+  .pro h2 { color: var(--accent-deep); }
+  .pro ul { margin: 10px 0 16px; padding-inline-start: 20px; display: grid; gap: 6px; }
+  .pro li::marker { color: var(--accent); }
+
+  .pager {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 32px;
+  }
+  .pager-link {
+    display: grid;
+    gap: 4px;
+    padding: 14px 16px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-card);
+    background: var(--surface);
+    color: var(--ink);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+  }
+  .pager-link:hover { border-color: var(--brand); }
+  .pager-link small { display: inline-flex; align-items: center; gap: 4px; color: var(--ink-muted); font-size: 12px; }
+  .pager-link small svg { width: 14px; height: 14px; }
+  .pager-link.end { text-align: end; justify-items: end; }
+
+  /* Lesson body (Markdown) */
+  .prose { margin-top: 8px; font-size: 16px; }
+  :global([dir='rtl']) .prose { font-size: 17px; }
+  .prose :global(h2) { margin-top: 36px; font-size: 21px; font-weight: 600; }
+  .prose :global(h3) { margin-top: 24px; font-size: 17px; font-weight: 600; }
+  .prose :global(p) { margin-top: 12px; }
+  .prose :global(ul), .prose :global(ol) { margin: 12px 0 0; padding-inline-start: 22px; }
+  .prose :global(li) { margin-top: 6px; }
+  .prose :global(li::marker) { color: var(--brand-deep); font-weight: 600; }
+  .prose :global(strong) { font-weight: 600; }
+  .prose :global(blockquote) {
+    margin: 20px 0 0;
+    padding: 14px 18px;
+    border-inline-start: 4px solid var(--brand);
+    border-radius: var(--radius-field);
+    background: var(--brand-tint);
+  }
+  .prose :global(blockquote p:first-child) { margin-top: 0; }
+  .prose :global(table) {
+    width: 100%;
+    margin-top: 16px;
+    border-collapse: collapse;
+    font-size: 14px;
+    background: var(--surface);
+    border-radius: var(--radius-field);
+    overflow: hidden;
+    box-shadow: var(--shadow-card);
+  }
+  .prose :global(th), .prose :global(td) {
+    padding: 10px 12px;
+    text-align: start;
+    vertical-align: top;
+    border-top: 1px solid var(--line);
+  }
+  .prose :global(th) { background: var(--canvas); font-weight: 600; border-top: 0; }
+</style>

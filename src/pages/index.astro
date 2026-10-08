@@ -1,0 +1,23 @@
+---
+// The Academy lives under /fr/ and /ar/. Send Arabic-language browsers to
+// /ar/ and everyone else to /fr/ (the store's default language).
+---
+
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>De9De9 Academy</title>
+    <link rel="canonical" href={new URL('/fr/', Astro.site).href} />
+    <meta name="robots" content="noindex" />
+    <script is:inline>
+      var lang = (navigator.languages && navigator.languages[0]) || navigator.language || '';
+      location.replace(/^ar\b/i.test(lang) ? '/ar/' : '/fr/');
+    </script>
+    <noscript><meta http-equiv="refresh" content="0; url=/fr/" /></noscript>
+  </head>
+  <body style="font-family: system-ui, sans-serif; padding: 24px">
+    <p><a href="/fr/">De9De9 Academy (Français)</a> · <a href="/ar/" lang="ar">أكاديمية De9De9 (العربية)</a></p>
+  </body>
+</html>

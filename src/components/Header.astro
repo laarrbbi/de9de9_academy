@@ -1,0 +1,122 @@
+---
+import { STORE_URL } from '../config';
+import { otherLocale, t, type Locale } from '../i18n/ui';
+
+interface Props {
+  locale: Locale;
+  switchHref: string;
+}
+const { locale, switchHref } = Astro.props;
+const storeHref = `${STORE_URL}/${locale}?utm_source=academy&utm_medium=header`;
+---
+
+<a class="skip" href="#main">{locale === 'fr' ? 'Aller au contenu' : 'انتقل إلى المحتوى'}</a>
+<header class="topbar">
+  <div class="wrap topbar-in">
+    <a class="brand" href={`/${locale}/`} aria-label={t(locale, 'site.name')}>
+      <img src="/de9de9-logo.png" alt="" width="46" height="41" />
+      <span class="brand-word">Academy</span>
+    </a>
+    <nav class="nav" aria-label={t(locale, 'nav.tracks')}>
+      <a class="nav-link hide-sm" href={`/${locale}/#parcours`}>{t(locale, 'nav.tracks')}</a>
+      <a
+        class="lang"
+        href={switchHref}
+        hreflang={otherLocale(locale)}
+        lang={otherLocale(locale)}
+        aria-label={t(locale, 'nav.switchLabel')}
+      >
+        {t(locale, 'nav.switch')}
+      </a>
+      <a class="btn btn-primary store" href={storeHref}>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M5.5 8h13l-1 12h-11l-1-12Zm3.5 0V7a3 3 0 0 1 6 0v1" /></svg>
+        <span class="store-label">{t(locale, 'nav.store')}</span>
+      </a>
+    </nav>
+  </div>
+</header>
+
+<style>
+  .skip {
+    position: absolute;
+    inset-inline-start: 8px;
+    top: -60px;
+    z-index: 30;
+    padding: 8px 14px;
+    border-radius: 999px;
+    background: var(--ink);
+    color: #fff;
+  }
+  .skip:focus { top: 8px; }
+
+  .topbar {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: rgba(255, 255, 255, 0.94);
+    backdrop-filter: saturate(1.4) blur(10px);
+    border-bottom: 1px solid var(--line);
+  }
+  .topbar-in {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    min-height: 64px;
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+  }
+  .brand img { width: 46px; height: auto; }
+  .brand-word {
+    padding: 2px 10px;
+    border-radius: 999px;
+    background: var(--brand-tint);
+    color: var(--brand-deep);
+    font-family: var(--font-latin);
+    font-size: 14px;
+    font-weight: 600;
+  }
+  .nav {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .nav-link {
+    padding: 8px 12px;
+    color: var(--ink);
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    border-radius: 999px;
+  }
+  .nav-link:hover { color: var(--brand-deep); }
+  .lang {
+    display: inline-flex;
+    align-items: center;
+    min-height: 40px;
+    padding: 6px 14px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    color: var(--ink);
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+  }
+  .lang:hover { border-color: var(--brand); color: var(--brand-deep); }
+  .lang:lang(ar) { font-family: var(--font-arabic); }
+  .lang:lang(fr) { font-family: var(--font-latin); }
+  .store { min-height: 40px; padding: 8px 14px; }
+  @media (max-width: 599px) {
+    .hide-sm { display: none; }
+    .store { width: 40px; padding: 0; }
+    /* icon-only on phones, but keep the name for screen readers */
+    .store-label {
+      position: absolute; width: 1px; height: 1px; overflow: hidden;
+      clip: rect(0, 0, 0, 0); white-space: nowrap;
+    }
+  }
+</style>
