@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">De9De9 Academy</string>
+    <string name="title_activity_main">De9De9 Academy</string>
+    <string name="package_name">com.avalonlbs.de9academy</string>
+    <string name="custom_url_scheme">com.avalonlbs.de9academy</string>
+</resources>

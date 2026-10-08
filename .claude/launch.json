@@ -4,8 +4,8 @@
     {
       "name": "de9de9-academy",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev"],
-      "port": 4321
+      "runtimeArgs": ["start"],
+      "port": 5174
     }
   ]
 }

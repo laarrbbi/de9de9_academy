@@ -4,14 +4,14 @@ import { z } from 'astro/zod';
 import { SHELF_KEYS } from './data/shelves';
 
 /**
- * Lessons: src/content/lessons/<locale>/<track>/<lesson>.md
+ * Lessons: ../content/lessons/<locale>/<track>/<lesson>.md (shared with the app)
  *
  * The entry id is the path without extension, e.g. "fr/plomberie/deboucher-un-evier".
  * The same lesson in the other language has the same <track>/<lesson> path,
- * and tests/content.test.mjs checks the two stay in step.
+ * and the root tests/content.test.mjs checks the two stay in step.
  */
 const lessons = defineCollection({
-  loader: glob({ pattern: '{fr,ar}/*/*.md', base: './src/content/lessons' }),
+  loader: glob({ pattern: '{fr,ar}/*/*.md', base: '../content/lessons' }),
   schema: z
     .object({
       title: z.string().min(1),
