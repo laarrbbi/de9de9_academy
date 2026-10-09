@@ -35,6 +35,12 @@ in `www/`, no framework or bundler, like the sibling app De9De9 Play
 - `www/js/content.js` is generated: edit `content/lessons/`, never that file.
 - `web/` is the parked website. Don't change it unless asked.
 
+## Reviews
+
+Code reviews follow `.claude/skills/code-review-pipeline/` (the same skill the
+store uses): four phases, one at a time, stopping for a go-ahead between
+phases. Reports go in `reports/`.
+
 ## Commands
 
 - `npm start` (build lessons + serve `www/` on :5174) · `npm run watch`
