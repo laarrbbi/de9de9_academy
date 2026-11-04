@@ -10,8 +10,9 @@ tools:
     shelf: travaux-outillage-general
   - name: مفك مسطّح ومفك صليبي
     shelf: travaux-outillage-general
-  - name: حلقات مطاطية احتياطية أو خرطوشة خلّاط
+  - name: حلقات مطاطية احتياطية
     shelf: travaux-plomberie
+  - name: خرطوشة خلّاط من نفس طراز القديمة
   - name: خرقة وخل أبيض
 callAPro:
   - صمّام الإيقاف تحت المغسلة عالق، أو يسرّب هو نفسه عندما تديره.

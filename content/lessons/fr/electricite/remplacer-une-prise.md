@@ -10,13 +10,10 @@ tools:
   - name: Prise 2P+T 16 A (avec terre)
     shelf: travaux-electricite
   - name: Vérificateur d’absence de tension (VAT)
-    shelf: travaux-electricite
   - name: Tournevis isolés
     shelf: travaux-outillage-general
   - name: Pince à dénuder
-    shelf: travaux-outillage-general
   - name: Lampe frontale
-    shelf: travaux-electricite
 callAPro:
   - Les fils sont trop courts, noircis, cassants ou en aluminium (couleur argentée).
   - La boîte dans le mur est cassée et la prise ne tient plus.
@@ -60,6 +57,8 @@ Un climatiseur, un four ou un chauffe-eau ne se branchent pas sur une prise ordi
 3. Vérifiez la prise à remplacer : entre les deux trous, puis entre chaque trou et la terre. Rien.
 4. Testez à nouveau le VAT sur la prise qui marche.
 
+Un testeur sans contact ne remplace pas le VAT : il peut rester muet sur un fil sous tension.
+
 L’éclairage est peut-être coupé lui aussi : c’est le moment de la lampe frontale.
 
 ## Démonter l’ancienne prise
@@ -76,7 +75,7 @@ L’éclairage est peut-être coupé lui aussi : c’est le moment de la lampe f
 ## Brancher la nouvelle prise
 
 1. Si un bout de fil est abîmé, coupez-le et dénudez à nouveau la longueur indiquée sur le gabarit au dos de la prise, souvent environ 1 cm.
-2. Branchez la **terre** sur la borne du milieu, marquée ⏚.
+2. Branchez la **terre** sur la borne du milieu, marquée ⏚ (un trait vertical posé sur trois traits horizontaux de plus en plus courts).
 3. Branchez la **phase** et le **neutre** sur les deux autres bornes, en suivant les repères **L** et **N** s’il y en a.
 4. Aucun cuivre nu ne doit dépasser des bornes.
 5. Tirez légèrement sur chaque fil : il ne doit pas bouger.

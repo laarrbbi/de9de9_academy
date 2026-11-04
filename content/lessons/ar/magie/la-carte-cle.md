@@ -7,7 +7,6 @@ level: beginner
 risk: low
 tools:
   - name: رزمة من 52 ورقة لعب
-    shelf: evenement-musique-spectacle
   - name: طاولة ومتفرّج
 quiz:
   - question: أي ورقة يجب أن تحفظها سرًّا؟

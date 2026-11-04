@@ -7,7 +7,6 @@ level: beginner
 risk: low
 tools:
   - name: Un jeu de 52 cartes
-    shelf: evenement-musique-spectacle
   - name: Une table et un spectateur
 quiz:
   - question: Quelle carte devez-vous mémoriser en secret ?

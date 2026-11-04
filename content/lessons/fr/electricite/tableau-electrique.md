@@ -8,7 +8,6 @@ risk: medium
 safety: N’enlevez jamais le capot du tableau. Derrière, des pièces restent sous tension même quand le disjoncteur général est coupé, car l’arrivée du réseau reste alimentée. Dans cette leçon, on ne touche qu’aux manettes et aux boutons.
 tools:
   - name: Lampe frontale ou torche
-    shelf: travaux-electricite
   - name: Étiquettes et un marqueur
 callAPro:
   - Le disjoncteur saute alors que tout est débranché sur ce circuit.

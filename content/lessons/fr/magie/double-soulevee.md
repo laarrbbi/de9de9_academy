@@ -7,7 +7,6 @@ level: intermediate
 risk: low
 tools:
   - name: Un jeu de cartes en bon état
-    shelf: evenement-musique-spectacle
   - name: Un miroir ou la caméra de votre téléphone
 quiz:
   - question: Que montre réellement une double soulevée ?

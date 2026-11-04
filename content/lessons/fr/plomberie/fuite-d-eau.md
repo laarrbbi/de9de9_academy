@@ -12,7 +12,6 @@ tools:
   - name: Flexibles et joints de rechange
     shelf: travaux-plomberie
   - name: Détecteur de fuite
-    shelf: travaux-plomberie
   - name: Clé à molette
     shelf: travaux-outillage-general
   - name: Colorant alimentaire et un téléphone pour photographier le compteur

@@ -12,7 +12,6 @@ tools:
   - name: أنابيب مرنة وحلقات احتياطية
     shelf: travaux-plomberie
   - name: كاشف تسرّب
-    shelf: travaux-plomberie
   - name: مفتاح إنجليزي
     shelf: travaux-outillage-general
   - name: ملوّن غذائي وهاتف لتصوير العدّاد

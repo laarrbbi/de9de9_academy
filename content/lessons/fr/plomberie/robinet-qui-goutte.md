@@ -10,8 +10,9 @@ tools:
     shelf: travaux-outillage-general
   - name: Tournevis plat et cruciforme
     shelf: travaux-outillage-general
-  - name: Joints de rechange ou cartouche de mitigeur
+  - name: Joints de rechange
     shelf: travaux-plomberie
+  - name: Cartouche de mitigeur, du même modèle que l’ancienne
   - name: Un chiffon et du vinaigre blanc
 callAPro:
   - Le robinet d’arrêt sous l’évier est bloqué, ou fuit lui-même quand vous le tournez.

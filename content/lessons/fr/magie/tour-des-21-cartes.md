@@ -7,7 +7,6 @@ level: beginner
 risk: low
 tools:
   - name: Un jeu de cartes
-    shelf: evenement-musique-spectacle
   - name: Une table
 quiz:
   - question: Combien de fois faut-il distribuer les cartes en trois colonnes ?

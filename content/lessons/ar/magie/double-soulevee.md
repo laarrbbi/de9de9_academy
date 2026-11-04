@@ -7,7 +7,6 @@ level: intermediate
 risk: low
 tools:
   - name: رزمة أوراق في حالة جيدة
-    shelf: evenement-musique-spectacle
   - name: مرآة أو كاميرا هاتفك
 quiz:
   - question: ماذا يُظهر الرفع المزدوج فعلًا؟

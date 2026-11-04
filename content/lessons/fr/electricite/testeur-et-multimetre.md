@@ -8,7 +8,6 @@ risk: medium
 safety: Pour mesurer une prise, utilisez un multimètre en bon état, cordons sans coupure, réglé sur V~ avant de toucher la prise. Tenez les pointes par la partie isolée, derrière les gardes, et ne touchez jamais le métal des pointes.
 tools:
   - name: Vérificateur d’absence de tension (VAT)
-    shelf: travaux-electricite
   - name: Multimètre
     shelf: travaux-outillage-general
   - name: Une pile neuve pour vous entraîner
@@ -23,7 +22,7 @@ quiz:
       - Non, il ne garantit pas l’absence de tension
       - Oui, si vous portez des gants
     answer: 1
-    explanation: Le tournevis testeur peut rester éteint sur un fil sous tension (chaussures isolantes, mauvais contact, testeur usé). Seul un VAT ou un multimètre vérifié permet de conclure.
+    explanation: Le tournevis testeur, comme le testeur sans contact, peut rester éteint sur un fil sous tension (chaussures isolantes, mauvais contact, testeur usé). Seul un VAT ou un multimètre vérifié permet de conclure.
   - question: Pour mesurer une prise, sur quelle position mettre le multimètre ?
     options:
       - Ω (résistance)
@@ -40,11 +39,12 @@ quiz:
     explanation: En continuité, le multimètre envoie lui-même un petit courant. Sur un circuit sous tension, vous risquez de l’abîmer et de vous blesser.
 ---
 
-## Trois outils, trois usages
+## Quatre outils, quatre usages
 
 | Outil | Ce qu’il dit | À quoi il sert |
 |---|---|---|
 | **Tournevis testeur** | « Il y a peut-être du courant » | Repérer la phase, pas plus. **Il ne prouve jamais l’absence de tension.** |
+| **Testeur sans contact** (le stylo qui bipe près d’un fil) | « Il y a peut-être du courant » | Repérer un fil sous tension dans un câble ou un mur. **Comme le tournevis testeur, il ne prouve jamais l’absence de tension.** |
 | **VAT** (vérificateur d’absence de tension) | « Il y a du courant, ou il n’y en a pas » | Vérifier qu’on peut toucher les fils avant un travail |
 | **Multimètre** | Une valeur précise : volts, ohms | Mesurer une prise, une pile, tester un fusible ou une rallonge |
 
@@ -61,8 +61,8 @@ Un VAT en panne qui affiche « pas de tension », c’est le pire des pièges. A
 Sur le cadran, vous trouverez :
 
 - **V~** ou **VAC** : tension alternative, celle des prises.
-- **V⎓** ou **VDC** : tension continue, celle des piles et des batteries.
-- **Ω** : résistance, et souvent le symbole d’un haut-parleur pour la **continuité** (bip).
+- **V⎓** ou **VDC** (un V surmonté d’une ligne pleine et d’une ligne pointillée) : tension continue, celle des piles et des batteries.
+- **Ω** (la lettre grecque oméga, en forme de fer à cheval) : résistance, et souvent le symbole d’un haut-parleur pour la **continuité** (bip).
 - **A** : courant. On ne s’en sert pas ici.
 
 Le cordon **noir** va toujours dans la prise **COM**. Le cordon **rouge** va dans la prise marquée **VΩ**, jamais dans la prise **A** pour mesurer une tension : ce serait un court-circuit dans vos mains.
@@ -87,4 +87,4 @@ Réglez sur V⎓, posez la pointe rouge sur le + et la noire sur le −. Une pil
 
 - Mesurer une tension avec le cordon rouge dans la prise **A**.
 - Utiliser la continuité ou les ohms sur un circuit **sous tension**.
-- Faire confiance à un tournevis testeur pour dire « c’est coupé ».
+- Faire confiance à un tournevis testeur ou à un testeur sans contact pour dire « c’est coupé ».

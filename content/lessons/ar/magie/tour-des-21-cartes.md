@@ -7,7 +7,6 @@ level: beginner
 risk: low
 tools:
   - name: رزمة أوراق لعب
-    shelf: evenement-musique-spectacle
   - name: طاولة
 quiz:
   - question: كم مرة يجب توزيع الأوراق في ثلاثة أعمدة؟
