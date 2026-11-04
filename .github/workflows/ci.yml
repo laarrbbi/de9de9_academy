@@ -19,3 +19,24 @@ jobs:
       - run: npm run build
       - name: App scripts parse
         run: for f in www/js/*.js; do node --check "$f"; done
+      # cap copy must build the lessons itself (capacitor:copy:before), so a
+      # plain `npx cap sync` can never ship an app without them.
+      - name: Native copy carries the lessons
+        run: |
+          rm www/js/content.js
+          npx cap copy android
+          test -s android/app/src/main/assets/public/js/content.js
+
+  screens:
+    # The screens in a phone-sized Chromium: navigation, quiz, language,
+    # store links. Not a substitute for a check on real phones.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e

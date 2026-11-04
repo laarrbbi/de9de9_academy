@@ -15,7 +15,8 @@
     "sync": "cap sync",
     "ios": "cap sync ios && cap open ios",
     "android": "cap sync android && cap open android",
-    "capacitor:copy:before": "node scripts/build-content.mjs"
+    "capacitor:copy:before": "node scripts/build-content.mjs",
+    "test:e2e": "node scripts/build-content.mjs && node --test --test-concurrency=1 tests/e2e/*.e2e.mjs"
   },
   "dependencies": {
     "@capacitor/android": "^8.5.3",
@@ -26,6 +27,7 @@
   "devDependencies": {
     "@capacitor/cli": "^8.5.3",
     "marked": "^18.1.0",
+    "playwright": "^1.56.1",
     "yaml": "^2.9.1"
   }
 }
