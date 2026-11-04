@@ -22,6 +22,17 @@ export function parentHref(route) {
   return homeHref();
 }
 
+// What a tap on an in-app link does to the history. `trail` is the stack of
+// screens from the first one to the current one. A link to a screen already
+// on the stack goes back to it ({ back: n }), so "Retour au parcours" does
+// not stack the track a second time; anything else goes forward ({ push }).
+// { back: 0 } is a link to the current screen: nothing to do.
+export function navigation(trail, hash) {
+  const at = trail.lastIndexOf(hash);
+  if (at !== -1) return { back: trail.length - 1 - at };
+  return { push: [...trail, hash] };
+}
+
 // The lesson to suggest next: the first one not done, in course order.
 // Returns undefined when everything in `lessons` is done.
 export function nextLesson(lessons, done) {

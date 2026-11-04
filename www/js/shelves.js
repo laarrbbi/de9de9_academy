@@ -34,10 +34,11 @@ export const SHELVES = {
   },
 };
 
-// Link to a store shelf, tagged so the store can tell Academy traffic apart.
-export function shelfUrl(shelf, locale, campaign) {
+// Link to a store shelf, tagged so the store can tell Academy traffic apart:
+// `medium` says where the link was ('lesson' tool list or 'track' screen).
+export function shelfUrl(shelf, locale, campaign, medium = 'lesson') {
   const slug = encodeURIComponent(SHELVES[shelf].slug[locale]);
-  const query = new URLSearchParams({ utm_source: 'academy-app', utm_medium: 'lesson', utm_campaign: campaign });
+  const query = new URLSearchParams({ utm_source: 'academy-app', utm_medium: medium, utm_campaign: campaign });
   return `${STORE_URL}/${locale}/c/${slug}?${query}`;
 }
 

@@ -56,7 +56,7 @@
   --brand-dark: #3fa69e;
   --brand-soft: #a9e2dd;
   --brand-tint: #dff4f2;
-  --brand-deep: #1f8079; /* teal that passes AA with white text */
+  --brand-deep: #1d7872; /* the store's #1f8079 a shade darker: passes AA as text on every tint, and under white text */
   --accent: #e7464e;
   --accent-soft: #f2a9a5;
   --accent-tint: #fdedee;
@@ -65,12 +65,12 @@
   --canvas: #f7f8f9;
   --surface: #ffffff;
   --ink: #2b3445;
-  --ink-muted: #6b7587; /* the store's #8b95a5 is too light for body text */
+  --ink-muted: #687183; /* the store's #8b95a5 is too light for body text; passes AA on canvas */
   --line: #e8ecf0;
 
   --success: #4cc38a;
   --success-tint: #e8f7f0;
-  --success-deep: #207f55;
+  --success-deep: #207d54;
   --warning-tint: #fdf1de;
   --warning-deep: #9a6300;
 
@@ -300,7 +300,7 @@ h1:focus { outline: none; }
 }
 .lang-btn {
   margin-inline-start: auto;
-  min-height: 40px;
+  min-height: 44px;
   padding: 6px 16px;
   border: 1px solid rgba(255, 255, 255, 0.7);
   border-radius: 999px;
@@ -315,7 +315,7 @@ h1:focus { outline: none; }
 .lang-btn:active { background: rgba(255, 255, 255, 0.14); }
 .home-head h1 { font-size: 28px; font-weight: 600; letter-spacing: -0.01em; }
 [dir='rtl'] .home-head h1 { font-weight: 700; letter-spacing: 0; }
-.home-head p { margin-top: 8px; font-size: 15px; opacity: 0.94; }
+.home-head p { margin-top: 8px; font-size: 15px; }
 
 .progress-card { margin-top: -52px; padding: 18px; display: grid; gap: 12px; position: relative; }
 .pc-top { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; color: var(--ink-muted); font-size: 14px; font-weight: 500; }
@@ -435,7 +435,7 @@ h1:focus { outline: none; }
   display: inline-flex;
   align-items: center;
   gap: 2px;
-  min-height: 32px;
+  min-height: 44px;
   font-size: 13px;
   font-weight: 600;
   text-decoration: none;
@@ -573,3 +573,15 @@ fieldset:disabled .option { cursor: default; }
 }
 .pager-link small { color: var(--ink-muted); font-size: 12px; }
 .pager-link.end { text-align: end; }
+
+/* Shown by js/boot.js when the app could not draw itself. */
+.app-error {
+  max-width: 420px;
+  margin: 30vh auto 0;
+  padding: 24px 20px;
+  display: grid;
+  gap: 12px;
+  text-align: center;
+  color: var(--ink);
+}
+.app-error p:lang(ar) { font-family: 'Cairo', system-ui, sans-serif; }

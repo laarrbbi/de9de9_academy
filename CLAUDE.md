@@ -17,7 +17,10 @@ in `www/`, no framework or bundler, like the sibling app De9De9 Play
   circuits.
 - **Facts must be checkable.** Methods are verified before they are written
   (the card tricks were simulated). No invented statistics or prices.
-- **Store links** go through `shelfUrl()` with a key from `www/js/shelves.js`.
+- **Store links** go through `shelfUrl()` with a key from `www/js/shelves.js`,
+  and only to a shelf that really sells that tool (check the store's
+  `docs/catalog/catalogue-produits.xlsx`, sheet "Catalogue"). No link beats a
+  link to a shelf without the item.
   The slugs mirror the store's importer
   (`apps/api/seeders/catalogue-import.ts` in `laarrbbi/de9de9`); the Arabic
   store needs the Arabic slug. Links out of the app use `target="_blank"` so
@@ -33,6 +36,12 @@ in `www/`, no framework or bundler, like the sibling app De9De9 Play
   installed.
 - Interface text goes in `www/js/i18n.js`, in both languages.
 - `www/js/content.js` is generated: edit `content/lessons/`, never that file.
+  `cap sync`/`cap copy` rebuild it through the `capacitor:copy:before` script.
+- Never rename or move a published lesson file: progress is keyed by
+  `<track>/<file name>`.
+- `www/js/` can't call Capacitor plugins through `Capacitor.Plugins`: the
+  app loads no `@capacitor/core` JavaScript. Set plugin behaviour in
+  `capacitor.config.json`, or vendor core first.
 - `web/` is the parked website. Don't change it unless asked.
 
 ## Reviews

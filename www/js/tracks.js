@@ -1,7 +1,8 @@
 // A track is a short course on one store shelf. Its lessons live in
 // content/lessons/<locale>/<track id>/, one Markdown file per lesson and
 // language. To add a track: add it here, draw www/assets/icons/<id>.svg,
-// and write its lessons in both languages.
+// and write its lessons in both languages. `shelf` is the store shelf that
+// sells the track's tools, or null when no shelf does (no button is shown).
 export const TRACKS = [
   {
     id: 'plomberie',
@@ -41,7 +42,9 @@ export const TRACKS = [
       ar: 'ثلاث خدع للمبتدئين والقواعد الذهبية للسحرة لإبهار جمهورك.',
     },
     group: { fr: 'Évènement', ar: 'مناسبات' },
-    shelf: 'evenement-musique-spectacle',
+    // No shelf yet: the store sells no playing cards. Musique et spectacle
+    // (evenement-musique-spectacle) only has speakers, lights and microphones.
+    shelf: null,
   },
 ];
 

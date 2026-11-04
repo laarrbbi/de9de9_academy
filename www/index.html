@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
-  <meta name="theme-color" content="#1f8079">
+  <meta name="theme-color" content="#1d7872">
   <meta name="color-scheme" content="light">
   <title>De9De9 Academy</title>
   <link rel="icon" href="assets/de9de9-logo.png">
@@ -12,6 +12,11 @@
 </head>
 <body>
   <main id="app"></main>
+  <div id="app-error" class="app-error" role="alert" hidden>
+    <p lang="fr">L’application n’a pas pu s’afficher. Fermez-la puis rouvrez-la.</p>
+    <p lang="ar" dir="rtl">تعذّر عرض التطبيق. أغلقه ثم أعد فتحه.</p>
+  </div>
+  <script src="js/boot.js"></script>
   <script type="module" src="js/main.js"></script>
 </body>
 </html>

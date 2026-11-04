@@ -3,7 +3,7 @@ import { SERVICES_URL } from './config.js';
 import { dir, t } from './i18n.js';
 import { markDone, readDone, readLocale, saveLocale } from './progress.js';
 import { setupQuiz } from './quiz.js';
-import { homeHref, lessonHref, nextLesson, parentHref, parseRoute, trackHref } from './routes.js';
+import { homeHref, lessonHref, navigation, nextLesson, parentHref, parseRoute, trackHref } from './routes.js';
 import { SHELVES, shelfUrl, storeUrl } from './shelves.js';
 import { TRACKS } from './tracks.js';
 
@@ -11,6 +11,10 @@ const app = document.getElementById('app');
 let locale = readLocale();
 // How many screens deep we are in this app's history (0 = first screen).
 let depth = 0;
+// When the current screen was drawn. Taps in the next moment are ignored, so
+// a double tap does not land on the new screen too.
+let drawnAt = 0;
+const TAP_GUARD_MS = 300; // Android's own double-tap window
 
 const tr = (key) => t(locale, key);
 const esc = (value) =>
@@ -184,7 +188,7 @@ function trackScreen(track) {
               ${bar(n, list.length)}
             </div>
             <a class="btn btn-primary" href="${start.href}">${start.label}</a>
-            ${outLink(shelfUrl(track.shelf, locale, track.id), 'btn btn-outline', `${tr('track.shop')} « ${esc(SHELVES[track.shelf].name[locale])} »`)}
+            ${track.shelf ? outLink(shelfUrl(track.shelf, locale, track.id, 'track'), 'btn btn-outline', `${tr('track.shop')} « ${esc(SHELVES[track.shelf].name[locale])} »`) : ''}
           </section>
           <ol class="lesson-list">${rows}</ol>
         </div>
@@ -227,7 +231,7 @@ function quizBlock(lesson, after) {
           <button class="btn btn-primary" type="submit" data-quiz-submit>${tr('quiz.check')}</button>
           <button class="btn btn-outline" type="button" data-quiz-retry hidden>${tr('quiz.retry')}</button>
         </div>
-        <div class="success" data-quiz-success hidden>
+        <div class="success" data-quiz-success tabindex="-1" hidden>
           <span class="success-icon">${ICON.check}</span>
           <p class="success-title">${tr('quiz.success')}</p>
           <a class="btn btn-primary" href="${after.href}">${after.label} ${ICON.chevron}</a>
@@ -327,35 +331,59 @@ function screenFor(route) {
   return null;
 }
 
-function setSystemBars(dark) {
-  document.querySelector('meta[name="theme-color"]').content = dark ? '#1f8079' : '#ffffff';
-  // In the app, light status bar icons over the dark teal home header, dark
-  // icons over the white screens. In a browser there is no Capacitor.
-  window.Capacitor?.Plugins?.SystemBars?.setStyle({ style: dark ? 'DARK' : 'LIGHT', bar: 'StatusBar' })?.catch(() => {});
+// The browser's address-bar colour, when the app runs in a browser. In the
+// phone app the status bar style is set once in capacitor.config.json.
+function setThemeColor(dark) {
+  document.querySelector('meta[name="theme-color"]').content = dark ? '#1d7872' : '#ffffff';
 }
 
+// The stack of screens behind this one, kept in each history entry.
+const trail = () => history.state?.trail ?? [location.hash || homeHref()];
+
 function render(direction) {
+  drawnAt = performance.now();
   const route = parseRoute(location.hash);
-  let screen = screenFor(route);
-  if (!screen) {
-    // Unknown address (a renamed lesson, a typo): show the home screen.
-    if (route.name !== 'home') history.replaceState(history.state, '', homeHref());
-    screen = homeScreen();
+  let screen;
+  try {
+    screen = screenFor(route);
+    if (!screen) {
+      // Unknown address (a renamed lesson, a typo): show the home screen.
+      if (route.name !== 'home') {
+        history.replaceState({ ...history.state, trail: [...trail().slice(0, -1), homeHref()] }, '', homeHref());
+      }
+      screen = homeScreen();
+    }
+    app.innerHTML = screen.html;
+    screen.setup?.();
+  } catch (error) {
+    showFailure(error);
+    return;
   }
-  app.innerHTML = screen.html;
-  setSystemBars(screen.dark);
-  screen.setup?.();
+  setThemeColor(screen.dark);
   if (direction !== 'none') {
     app.firstElementChild.classList.add(direction === 'back' ? 'enter-back' : 'enter-forward');
     app.querySelector('h1')?.focus({ preventScroll: true });
   }
 }
 
+// Something broke while drawing a screen: say so rather than show a blank page.
+function showFailure(error) {
+  console.error(error);
+  app.replaceChildren();
+  document.getElementById('app-error').hidden = false;
+}
+
 function go(hash) {
-  if (hash === location.hash) return;
+  const move = navigation(trail(), hash);
+  if (move.back === 0) return;
   history.replaceState({ ...history.state, scrollY: window.scrollY }, '');
-  depth += 1;
-  history.pushState({ depth, scrollY: 0 }, '', hash);
+  if (move.back) {
+    // Already on the stack: go back to it (popstate draws it).
+    history.go(-move.back);
+    return;
+  }
+  depth = move.push.length - 1;
+  history.pushState({ trail: move.push, scrollY: 0 }, '', hash);
   render('forward');
   window.scrollTo(0, 0);
 }
@@ -366,7 +394,8 @@ function goBack() {
     return;
   }
   // Opened straight onto this screen: there is nothing behind it, go up.
-  history.replaceState({ depth: 0, scrollY: 0 }, '', parentHref(parseRoute(location.hash)));
+  const parent = parentHref(parseRoute(location.hash));
+  history.replaceState({ trail: [parent], scrollY: 0 }, '', parent);
   render('back');
   window.scrollTo(0, 0);
 }
@@ -376,6 +405,8 @@ function switchLanguage() {
   saveLocale(locale);
   applyLanguage();
   render('none');
+  // The button was redrawn: keep the focus on it.
+  app.querySelector('[data-action="lang"]')?.focus();
 }
 
 function applyLanguage() {
@@ -386,18 +417,23 @@ function applyLanguage() {
 
 document.addEventListener('click', (event) => {
   const link = event.target.closest('a[href^="#/"]');
+  const action = event.target.closest('[data-action]')?.dataset.action;
+  if (!link && !action) return;
+  if (performance.now() - drawnAt < TAP_GUARD_MS) {
+    event.preventDefault();
+    return;
+  }
   if (link) {
     event.preventDefault();
     go(link.getAttribute('href'));
     return;
   }
-  const action = event.target.closest('[data-action]')?.dataset.action;
   if (action === 'back') goBack();
   if (action === 'lang') switchLanguage();
 });
 
 window.addEventListener('popstate', (event) => {
-  const target = event.state?.depth ?? 0;
+  const target = (event.state?.trail?.length ?? 1) - 1;
   const direction = target < depth ? 'back' : 'forward';
   depth = target;
   render(direction);
@@ -405,7 +441,11 @@ window.addEventListener('popstate', (event) => {
 });
 
 history.scrollRestoration = 'manual';
-if (history.state === null) history.replaceState({ depth: 0, scrollY: 0 }, '', location.hash || homeHref());
-depth = history.state.depth ?? 0;
+if (!Array.isArray(history.state?.trail)) {
+  history.replaceState({ trail: [location.hash || homeHref()], scrollY: 0 }, '', location.hash || homeHref());
+}
+depth = history.state.trail.length - 1;
 applyLanguage();
 render('none');
+// The first screen was not reached by a tap: nothing to guard against yet.
+drawnAt = -Infinity;

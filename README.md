@@ -24,10 +24,14 @@ Open it in a phone-sized browser window, or on your phone over Wi-Fi at
 Native builds (after changing anything in `www/` or `content/`):
 
 ```bash
-npm run android    # builds the lessons, syncs and opens Android Studio
+npm run android    # syncs and opens Android Studio
 npm run ios        # same, opens Xcode
 python3 scripts/app-icons.py   # only when the logo changes (needs Pillow)
 ```
+
+Every `cap sync` and `cap copy`, including a plain `npx cap sync`, builds the
+lessons first (the `capacitor:copy:before` script), so the app never ships
+without them.
 
 ## What's in it
 
@@ -36,7 +40,7 @@ python3 scripts/app-icons.py   # only when the logo changes (needs Pillow)
 | Plomberie | Travaux › Plomberie | Unblocking a sink · Fixing a dripping tap · Finding and fixing a leak |
 | Électricité | Travaux › Électricité | Understanding the panel · Voltage tester and multimeter · Replacing a socket |
 | Climatisation | Travaux › Climatisation | How an AC works · Maintenance you can do · Settings and troubleshooting |
-| Magie de cartes | Évènement › Musique et spectacle | The key card · The 21-card trick · The double lift |
+| Magie de cartes | none yet (the store sells no playing cards) | The key card · The 21-card trick · The double lift |
 
 12 lessons, each in French and Arabic. The app opens in Arabic on an Arabic
 phone and in French otherwise; the reader can switch on the home screen.
@@ -67,7 +71,9 @@ Finished lessons are kept on the phone and count in both languages.
 2. Copy the frontmatter of an existing lesson and fill it in:
    - `risk`: `low`, `medium` or `high`. Anything above `low` must have a
      `safety` rule and a `callAPro` list; the build refuses it otherwise.
-   - `tools`: add `shelf:` to link a tool to the store (keys in `www/js/shelves.js`).
+   - `tools`: add `shelf:` to link a tool to the store (keys in `www/js/shelves.js`),
+     only when that shelf really sells the tool. Check the store's catalogue
+     first; a link to a shelf without the item is worse than no link.
    - `quiz`: 1 to 5 questions; `answer` is the index of the right option, from 0.
 3. Write the body in Markdown: `##` sections, numbered steps, and a
    `> **Astuce** :` blockquote for a tip.
@@ -75,17 +81,34 @@ Finished lessons are kept on the phone and count in both languages.
    that both languages have the same lessons, quiz answers, tool links,
    sections, tips and tables.
 
+Never rename or move a published lesson file: progress is saved under
+`<track>/<file name>`, so readers would lose that lesson's progress.
+
+`npm run watch` only watches `content/lessons/`. After editing
+`www/js/tracks.js` or `www/js/shelves.js`, restart it.
+
 To add a track: add it to `www/js/tracks.js`, draw `www/assets/icons/<id>.svg`,
-then write its lessons.
+then write its lessons. A track's `shelf` can be `null` when no store shelf
+sells its tools; the track screen then shows no shop button.
 
 ## How the app behaves
 
 - **Back:** every screen is a history entry. The on-screen arrow and Android's
   back button (handled by `@capacitor/app`) go back one screen; on the home
-  screen, Android's back button leaves the app.
+  screen, Android's back button leaves the app. A link to a screen that is
+  already behind the current one ("Retour au parcours") goes back to it
+  instead of stacking it again, and taps in the 300 ms after a screen change
+  are ignored, so a double tap only moves one screen.
 - **Links out:** store and "find a professional" links open in the phone's browser.
-- **Status bar:** light icons on the teal home screen, dark icons elsewhere
-  (Capacitor's `SystemBars`).
+- **Status bar:** dark icons on every screen, set once in
+  `capacitor.config.json` (`SystemBars.style: LIGHT`), so they stay readable
+  when the phone is in dark mode. The app loads no `@capacitor/core`
+  JavaScript, so plugins can't be called from `www/js/` without vendoring it.
+- **Language:** the first launch follows the phone's language (Arabic phones
+  get Arabic). On iOS this needs `CFBundleLocalizations` in `Info.plist`,
+  which lists `fr` and `ar`.
+- **If it can't start:** after 4 seconds without a screen, `js/boot.js` shows
+  a short message in both languages instead of a blank page.
 - **Safe areas:** screens pad themselves away from the notch and the gesture
   bar (`--safe-area-inset-*` from Capacitor on Android, `env()` on iOS).
 
@@ -98,9 +121,11 @@ then write its lessons.
 - **Content review.** Have the lessons reread by the team in both languages,
   and the electricity and AC safety content by a qualified electrician and AC
   technician, before publishing.
-- **Magic shelf.** The store's catalogue documents have no card or magic
-  products, so the magic lessons link to Évènement › Musique et spectacle.
-  Point them at the right shelf in `www/js/shelves.js` once it exists.
+- **Missing products.** The store's catalogue has no playing cards, no
+  two-pole voltage tester (VAT, only a non-contact one), no head torch, leak
+  detector, wire strippers or mixer cartridges. Those tools have no store
+  link until the store stocks them; the magic track has no shelf at all.
+  When they arrive, add the `shelf:` back in both languages.
 - **Addresses.** Store links open the website; "Find a professional" opens the
   store home. Point `www/js/config.js` at the services page, or at the De9De9
   app's deep links once they exist.

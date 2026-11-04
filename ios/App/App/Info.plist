@@ -6,6 +6,11 @@
 	<string>$(CAPACITOR_DEBUG)</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
+	<key>CFBundleLocalizations</key>
+	<array>
+		<string>fr</string>
+		<string>ar</string>
+	</array>
 	<key>CFBundleDisplayName</key>
         <string>De9De9 Academy</string>
 	<key>CFBundleExecutable</key>

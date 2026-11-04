@@ -3,7 +3,7 @@
 //
 // A lesson lives at content/lessons/<locale>/<track>/<lesson>.md. The same
 // lesson in the other language has the same <track>/<lesson> path.
-import { readdirSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { Marked } from 'marked';
 import { parse as parseYaml } from 'yaml';
@@ -65,9 +65,17 @@ export function lessonProblems(data) {
 }
 
 // Splits a lesson file into its frontmatter data and its Markdown body.
+// Tolerates what editors add on their own: a byte-order mark, Windows line
+// endings, spaces after the "---" lines, and no newline at the very end.
 export function parseLesson(text) {
-  const match = /^---\n([\s\S]*?)\n---\n([\s\S]*)$/.exec(text.replace(/\r\n/g, '\n'));
-  if (!match) throw new Error('missing the "---" frontmatter block at the top');
+  const clean = text.replace(/^\uFEFF/, '').replace(/\r\n/g, '\n');
+  const match = /^---[ \t]*\n([\s\S]*?)\n---[ \t]*(?:\n([\s\S]*))?$/.exec(clean);
+  if (!match) {
+    throw new Error(clean.startsWith('---')
+      ? 'the frontmatter block is never closed: add a line with only "---" after it'
+      : 'the file must start with a "---" line, then the frontmatter, then another "---" line');
+  }
+  return { data: parseYaml(match[1]) ?? {}, body: match[2] ?? '' };
   return { data: parseYaml(match[1]) ?? {}, body: match[2] };
 }
 
@@ -80,14 +88,14 @@ function structureOf(tokens) {
   };
 }
 
-function readLesson(locale, track, file) {
+function readLesson(dir, locale, track, file) {
   const path = `${locale}/${track}/${file}`;
   const fail = (message) => {
     throw new Error(`content/lessons/${path}: ${message}`);
   };
   let parsed;
   try {
-    parsed = parseLesson(readFileSync(join(LESSONS_DIR, path), 'utf8'));
+    parsed = parseLesson(readFileSync(join(dir, path), 'utf8'));
   } catch (error) {
     fail(error.message);
   }
@@ -118,18 +126,29 @@ function readLesson(locale, track, file) {
   };
 }
 
-// Every lesson, by language, in track order then lesson order.
-export function loadLessons() {
+// The folders inside `path`, without hidden entries such as the .DS_Store
+// files macOS Finder leaves behind.
+const folders = (path) =>
+  readdirSync(path, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory() && !entry.name.startsWith('.'))
+    .map((entry) => entry.name);
+
+// Every lesson, by language, in track order then lesson order. `dir` is the
+// lessons folder (the tests point it at a scratch copy).
+export function loadLessons(dir = LESSONS_DIR) {
   const trackIds = TRACKS.map((t) => t.id);
   const lessons = {};
   for (const locale of LOCALES) {
     lessons[locale] = [];
-    for (const track of readdirSync(join(LESSONS_DIR, locale))) {
+    if (!existsSync(join(dir, locale))) {
+      throw new Error(`content/lessons/${locale}/ is missing: every language needs its own folder of lessons.`);
+    }
+    for (const track of folders(join(dir, locale))) {
       if (!trackIds.includes(track)) {
         throw new Error(`content/lessons/${locale}/${track}: unknown track. Add it to www/js/tracks.js first.`);
       }
-      for (const file of readdirSync(join(LESSONS_DIR, locale, track))) {
-        if (file.endsWith('.md')) lessons[locale].push(readLesson(locale, track, file));
+      for (const file of readdirSync(join(dir, locale, track))) {
+        if (file.endsWith('.md')) lessons[locale].push(readLesson(dir, locale, track, file));
       }
     }
     lessons[locale].sort((a, b) => trackIds.indexOf(a.track) - trackIds.indexOf(b.track) || a.order - b.order);

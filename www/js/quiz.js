@@ -27,6 +27,8 @@ export function setupQuiz(form, { incomplete, score, onPass }) {
       status.textContent = '';
       success.hidden = false;
       success.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      // Screen readers announce the panel when it takes the focus.
+      success.focus({ preventScroll: true });
       onPass();
     } else {
       status.textContent = `${right} ${score} ${questions.length}`;
@@ -44,5 +46,6 @@ export function setupQuiz(form, { incomplete, score, onPass }) {
     retry.hidden = true;
     submit.hidden = false;
     questions[0]?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    questions[0]?.querySelector('input')?.focus({ preventScroll: true });
   });
 }
