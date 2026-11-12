@@ -1,11 +1,11 @@
 import { LESSONS } from './content.js';
-import { SERVICES_URL, STORE_LIVE } from './config.js';
+import { APP_LINKS, SERVICES_URL, SOCIAL_LINKS, STORE_LIVE } from './config.js';
 import { dir, t } from './i18n.js';
 import { markDone, readDone, readLocale, saveLocale } from './progress.js';
 import { setupQuiz } from './quiz.js';
 import { homeHref, lessonHref, navigation, nextLesson, parentHref, parseRoute, trackHref } from './routes.js';
 import { SHELVES, shelfUrl, storeUrl } from './shelves.js';
-import { TRACKS } from './tracks.js';
+import { groupEmoji, trackEmoji, trackScene, TRACKS } from './tracks.js';
 
 const app = document.getElementById('app');
 let locale = readLocale();
@@ -35,6 +35,8 @@ const ICON = {
   cross: svg('i', '0 0 20 20', `<path d="m6 6 8 8m0-8-8 8" ${stroke} stroke-width="2.2"/>`),
   clock: svg('i', '0 0 16 16', `<circle cx="8" cy="8" r="6.2" ${stroke} stroke-width="1.6"/><path d="M8 4.6V8l2.4 1.6" ${stroke} stroke-width="1.6"/>`),
   shield: svg('i', '0 0 16 16', '<path d="M8 1.6 2.6 3.8v3.8c0 3.2 2.3 5.8 5.4 6.8 3.1-1 5.4-3.6 5.4-6.8V3.8Z" fill="currentColor"/>'),
+  globe: svg('i', '0 0 16 16', `<circle cx="8" cy="8" r="6.2" ${stroke} stroke-width="1.5"/><path d="M1.8 8h12.4M8 1.8c-1.9 2-1.9 10.4 0 12.4m0-12.4c1.9 2 1.9 10.4 0 12.4" ${stroke} stroke-width="1.5"/>`),
+  saved: svg('i', '0 0 16 16', `<path d="M4 1.8h8v12.4L8 11.2l-4 3Z" ${stroke} stroke-width="1.5"/>`),
   offline: svg('i', '0 0 16 16', `<rect x="4" y="1.6" width="8" height="12.8" rx="1.8" ${stroke} stroke-width="1.5"/><path d="M8 5v4.6m-2-2 2 2 2-2" ${stroke} stroke-width="1.5"/>`),
   warn: svg('i safety-icon', '0 0 24 24', '<path d="M12 2.4 4 5.6v5.6c0 4.8 3.4 8.8 8 10.4 4.6-1.6 8-5.6 8-10.4V5.6Z" fill="currentColor"/><path d="M12 7.5v5.5" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/><circle cx="12" cy="16.3" r="1.3" fill="#fff"/>'),
 };
@@ -57,9 +59,28 @@ function chips(lesson) {
     <span class="chip chip-${lesson.risk}">${ICON.shield}${tr(`lesson.risk.${lesson.risk}`)}</span>`;
 }
 
-// `reveal`: the hero repeats the title, so the bar shows it only once the
-// hero's headline has scrolled under it (see watchTitle). Screen readers get
-// the headline, not this copy.
+// A 3D emoji of de9de9.dz on its white disc (decorative: a name is always
+// written next to it or on its link).
+const emojiDisc = (src, cls = '') => `<span class="emoji-disc ${cls}"><img src="${src}" alt=""></span>`;
+const img = (src, cls, w, h) => `<img class="${cls}" src="assets/brand-site/${src}.webp" alt="" width="${w}" height="${h}" draggable="false">`;
+// « b[o]ns »: the logo's roof over one letter, de9de9.dz's « sôlution ». The
+// word stays whole: a line must not break around the roofed letter.
+const roofed = (text) =>
+  text.replace(
+    /(\S*)\[(.)\](\S*)/,
+    (_, before, letter, after) =>
+      `<span class="roof-word">${before}<span class="roof">${letter}${img('roof-o', 'roof-art', 97, 97)}</span>${after}</span>`,
+  );
+// The De9De9 people, as on de9de9.dz's « Besoin d'un pro ? » band.
+const pros = (n, cls) =>
+  `<ul class="${cls}" aria-hidden="true">${[1, 2, 3, 4, 5, 6]
+    .slice(0, n)
+    .map((i) => `<li>${img(`pro-${i}`, '', 126, 255)}</li>`)
+    .join('')}</ul>`;
+
+// White top bar of the inner screens. `reveal`: the screen's head repeats
+// the title, so the bar shows it only once that headline has scrolled under
+// it (see watchTitle). Screen readers get the headline, not this copy.
 function topbar(title, { reveal = false } = {}) {
   const attrs = reveal ? 'class="topbar-title is-hidden" data-reveal aria-hidden="true"' : 'class="topbar-title"';
   return `
@@ -70,38 +91,65 @@ function topbar(title, { reveal = false } = {}) {
 }
 
 // ---------- screens ----------
-// Every screen opens on the teal top of de9de9.dz (the client's services
-// site) and carries its content on a rounded sheet laid over it.
+// The language of de9de9.dz, the client's services site, as the store took
+// it on 2026-11-09 (laarrbbi/de9de9, apps/storefront/src/components/home/ and
+// components/category/): white header, the teal band of 3D emojis, the
+// display title with the roof and the coral pill, the arch with the group's
+// scene, « Pourquoi ? », the pros band, the coral ribbon and the teal footer.
 
 function homeScreen() {
   const done = readDone();
   const all = LESSONS[locale];
   const doneCount = all.filter((l) => done.has(l.key)).length;
   const next = nextLesson(all, done);
-  const other = locale === 'fr' ? 'ar' : 'fr';
   const minutes = all.map((l) => l.minutes);
+  const tracks = TRACKS.filter((track) => lessonsOf(track.id).length > 0);
+  const trackName = (id) => esc(TRACKS.find((x) => x.id === id).name[locale]);
+
+  const languages = ['fr', 'ar']
+    .map((l) =>
+      l === locale
+        ? `<span class="lang-on" lang="${l}">${l === 'fr' ? 'Français' : 'العربية'}</span>`
+        : `<button class="lang-btn" type="button" data-action="lang" lang="${l}" aria-label="${esc(tr('nav.switchLabel'))}">${tr('nav.switch')}</button>`,
+    )
+    .join('');
+
+  const band = tracks
+    .map(
+      (track) => `
+        <li>
+          <a class="band-disc" href="${trackHref(track.id)}">
+            <img src="${trackEmoji(track)}" alt=""><span class="sr-only">${esc(track.name[locale])}</span>
+          </a>
+        </li>`,
+    )
+    .join('');
+
+  const steps = ['home.step1', 'home.step2', 'home.step3']
+    .map((key, i) => `<li><span class="step-n">${i + 1}</span>${tr(key)}</li>`)
+    .join('');
 
   const resume = next
     ? `<a class="resume tap" href="${lessonHref(next)}">
-        <span class="icon-chip small"><img src="assets/icons/${next.track}.svg" alt=""></span>
+        ${emojiDisc(trackEmoji(TRACKS.find((x) => x.id === next.track)), 'small')}
         <span class="grow">
-          <small>${tr(doneCount ? 'home.continue' : 'home.start')} · ${esc(TRACKS.find((x) => x.id === next.track).name[locale])}</small>
+          <small>${tr(doneCount ? 'home.continue' : 'home.start')} · ${trackName(next.track)}</small>
           <strong>${esc(next.title)}</strong>
         </span>
         ${ICON.chevron}
       </a>`
     : `<p class="all-done">${ICON.check}${tr('home.allDone')}</p>`;
 
-  const tracks = TRACKS.filter((track) => lessonsOf(track.id).length > 0)
+  const trackRows = tracks
     .map((track) => {
       const list = lessonsOf(track.id);
       const n = list.filter((l) => done.has(l.key)).length;
       return `
         <li>
           <a class="track-row card tap" href="${trackHref(track.id)}">
-            <span class="icon-chip"><img src="assets/icons/${track.id}.svg" alt=""></span>
+            ${emojiDisc(trackEmoji(track))}
             <span class="grow">
-              <span class="eyebrow">${esc(track.group[locale])}</span>
+              <span class="group-tag"><img src="${groupEmoji(track)}" alt="">${esc(track.group[locale])}</span>
               <strong class="row-title">${esc(track.name[locale])}</strong>
               <span class="row-meta">${list.length} ${tr('track.lessons')} · ${count(n, list.length)} ${tr('track.done')}</span>
               ${bar(n, list.length)}
@@ -112,12 +160,19 @@ function homeScreen() {
     })
     .join('');
 
-  // « Pourquoi … ? »: de9de9.dz's tilted title and teal panel with the ant,
-  // with reasons that hold for every lesson (the lengths come from the lessons).
-  const reasons = [
-    [ICON.clock, tr('home.whyShort').replace('{min}', Math.min(...minutes)).replace('{max}', Math.max(...minutes))],
-    [ICON.shield, tr('home.whySafe')],
+  // « Pourquoi ? »: reasons that hold for every lesson; the lengths are read
+  // from the lessons themselves.
+  const whyCards = [
+    ['assets/category-emoji/cours-particuliers.webp', tr('home.whyQuizTitle'), tr('home.whyQuizText')],
+    ['assets/brand-site/clock.webp', tr('home.whyShortTitle').replace('{min}', Math.min(...minutes)).replace('{max}', Math.max(...minutes)), tr('home.whyShortText')],
+    ['assets/brand-site/lock.webp', tr('home.whySafeTitle'), tr('home.whySafeText')],
+  ]
+    .map(([art, title, text]) => `<li class="why-card"><img src="${art}" alt=""><div><h3>${title}</h3><p>${text}</p></div></li>`)
+    .join('');
+  const whyRows = [
     [ICON.offline, tr('home.whyOffline')],
+    [ICON.globe, tr('home.whyBilingual')],
+    [ICON.saved, tr('home.whyProgress')],
   ]
     .map(([icon, text]) => `<li><span class="why-icon">${icon}</span><span>${text}</span></li>`)
     .join('');
@@ -133,18 +188,32 @@ function homeScreen() {
       </a>`
     : '';
 
+  const ribbon = next
+    ? `<section class="cta" aria-labelledby="cta-title">
+        <div class="ribbon"><h2 id="cta-title">${tr('home.ribbon')}</h2></div>
+        ${img('ant', 'ant', 360, 360)}
+        <p class="cta-title">${tr('home.ribbonTitle')}</p>
+        <a class="btn btn-coral" href="${lessonHref(next)}">${tr('home.ribbonButton')}</a>
+      </section>`
+    : '';
+
+  const rawOut = (href, label, inner, cls = '') =>
+    `<a class="${cls}" href="${esc(href)}" target="_blank" rel="noopener" aria-label="${esc(label)}">${inner}</a>`;
+
   return `
     <div class="screen home">
-      <header class="hero home-head">
-        <div class="home-bar">
-          <span class="logo-tile"><img src="assets/de9de9-logo.webp" alt="De9De9" width="40" height="36"></span>
-          <span class="app-tag">Academy</span>
-          <button class="lang-btn" type="button" data-action="lang" lang="${other}" aria-label="${esc(tr('nav.switchLabel'))}">${tr('nav.switch')}</button>
-        </div>
-        <h1 tabindex="-1">${tr('home.title')}</h1>
-        <p class="hero-lead">${tr('home.lead')}</p>
+      <header class="appbar home-head">
+        <img class="appbar-logo" src="assets/de9de9-logo.webp" alt="De9De9" width="49" height="44">
+        <span class="app-tag">Academy</span>
+        <div class="lang-switch" role="group" aria-label="${esc(tr('nav.language'))}">${languages}</div>
       </header>
-      <div class="sheet">
+      <nav class="band" aria-label="${esc(tr('home.bandLabel'))}"><ul>${band}</ul></nav>
+      <div class="content">
+        <section class="home-hero">
+          <h1 tabindex="-1"><span class="hero-line">${roofed(tr('home.heroLead'))}</span> <span class="hero-pill">${tr('home.heroHighlight')}</span></h1>
+          <p class="hero-sub">${tr('home.lead')}</p>
+          <ol class="steps" aria-label="${esc(tr('home.stepsLabel'))}">${steps}</ol>
+        </section>
         <section class="card progress-card">
           <div class="pc-top">
             <span>${tr('home.progress')}</span>
@@ -153,23 +222,51 @@ function homeScreen() {
           ${bar(doneCount, all.length)}
           ${resume}
         </section>
-        <h2 class="list-title">${tr('home.tracks')}</h2>
-        <ul class="track-list">${tracks}</ul>
+        <div class="showcase">
+          ${img('hero-house', 'house', 1000, 559)}
+          <div class="stat-card">
+            <p class="stat-big">${tr('home.statLessons').replace('{count}', `<span dir="ltr">${all.length}</span>`)}</p>
+            <p class="stat-text">${tr('home.statText').replace('{tracks}', tracks.length)}</p>
+          </div>
+        </div>
+        <h2 class="section-title">${tr('home.tracks')}</h2>
+        <ul class="track-list">${trackRows}</ul>
         <section class="why" aria-labelledby="why-title">
           <h2 class="why-title" id="why-title">${tr('home.whyTitle')}</h2>
+          <ul class="why-cards">${whyCards}</ul>
           <div class="why-panel">
-            <img class="ant" src="assets/ant.webp" alt="" width="104" height="104">
-            <ul class="why-list">${reasons}</ul>
+            ${img('ant', 'ant', 360, 360)}
+            <ul class="why-list" aria-label="${esc(tr('home.whyListLabel'))}">${whyRows}</ul>
           </div>
         </section>
         ${store}
-        <section class="pro-banner">
-          <h2>${tr('home.proTitle')}</h2>
-          <p>${tr('home.proBody')}</p>
-          ${outLink(SERVICES_URL, 'btn btn-white', tr('lesson.proCta'))}
+        <section class="app-promo" aria-labelledby="pro-title">
+          ${img('roof-band', 'roof-band', 1920, 1009)}
+          ${pros(6, 'pros')}
+          <div class="app-promo-copy">
+            <h2 id="pro-title">${tr('home.proLead')} <span>${tr('home.proHighlight')}</span></h2>
+            <p>${tr('home.proText')}</p>
+            ${outLink(SERVICES_URL, 'btn btn-primary', tr('lesson.proCta'))}
+          </div>
+          ${img('phone-hand', 'phone-hand', 731, 953)}
         </section>
-        <p class="note">${tr('home.note')}</p>
+        ${ribbon}
       </div>
+      <footer class="foot">
+        <svg class="wave" viewBox="0 0 1440 64" preserveAspectRatio="none" aria-hidden="true"><path d="M0 40 C 240 64, 480 8, 720 20 C 960 32, 1200 64, 1440 28 L 1440 64 L 0 64 Z"/></svg>
+        <div class="foot-body">
+          <span class="logo-tile"><img src="assets/de9de9-logo.webp" alt="De9De9" width="40" height="36"></span>
+          <p class="foot-note">${tr('home.note')}</p>
+          <h2>${tr('home.appTitle')}</h2>
+          <p>${tr('home.appText')}</p>
+          <div class="badges">
+            ${rawOut(APP_LINKS.googlePlay, tr('home.googlePlay'), img('badge-google-play', '', 420, 121))}
+            ${rawOut(APP_LINKS.appStore, tr('home.appStore'), img('badge-app-store', '', 420, 121))}
+          </div>
+          <h2>${tr('home.socialTitle')}</h2>
+          <ul class="socials">${SOCIAL_LINKS.map((s) => `<li>${rawOut(s.href, s.name, img(`social-${s.icon}`, '', 42, 42), 'social')}</li>`).join('')}</ul>
+        </div>
+      </footer>
     </div>`;
 }
 
@@ -199,20 +296,24 @@ function trackScreen(track) {
     )
     .join('');
 
+  // The head of a de9de9.dz group page: the name and a line of copy, and the
+  // teal arch with the group's scene, the track's emoji in its bubble on top.
   return `
     <div class="screen">
       ${topbar(track.name[locale], { reveal: true })}
-      <header class="hero track-hero">
-        <div class="th-top">
-          <span class="icon-chip big"><img src="assets/icons/${track.id}.svg" alt=""></span>
-          <div>
-            <p class="eyebrow">${esc(track.group[locale])}</p>
+      <div class="content">
+        <header class="hero track-hero">
+          <div class="th-copy">
+            <p class="group-tag"><img src="${groupEmoji(track)}" alt="">${esc(track.group[locale])}</p>
             <h1 tabindex="-1">${esc(track.name[locale])}</h1>
+            <p class="tagline">${esc(track.tagline[locale])}</p>
           </div>
-        </div>
-        <p class="hero-lead">${esc(track.tagline[locale])}</p>
-      </header>
-      <div class="sheet">
+          <div class="arch" aria-hidden="true">
+            <span class="arch-shape"></span>
+            <img class="arch-scene" src="${trackScene(track)}" alt="">
+            ${emojiDisc(trackEmoji(track), 'arch-bubble')}
+          </div>
+        </header>
         <section class="card track-head">
           <div class="th-progress">
             <span>${count(n, list.length)} ${tr('track.done')}</span>
@@ -221,6 +322,7 @@ function trackScreen(track) {
           <a class="btn btn-primary" href="${start.href}">${start.label}</a>
           ${STORE_LIVE && track.shelf ? outLink(shelfUrl(track.shelf, locale, track.id, 'track'), 'btn btn-outline', `${tr('track.shop')} « ${esc(SHELVES[track.shelf].name[locale])} »`) : ''}
         </section>
+        <h2 class="section-title">${tr('track.list')}</h2>
         <ol class="lesson-list">${rows}</ol>
       </div>
     </div>`;
@@ -262,7 +364,7 @@ function quizBlock(lesson, after) {
           <button class="btn btn-outline" type="button" data-quiz-retry hidden>${tr('quiz.retry')}</button>
         </div>
         <div class="success" data-quiz-success tabindex="-1" hidden>
-          <img class="ant" src="assets/ant.webp" alt="" width="96" height="96">
+          ${img('ant', 'ant', 360, 360)}
           <p class="success-title">${tr('quiz.success')}</p>
           <a class="btn btn-primary" href="${after.href}">${after.label} ${ICON.chevron}</a>
         </div>
@@ -300,9 +402,10 @@ function lessonScreen(track, lesson) {
 
   const pro = lesson.callAPro.length
     ? `<section class="pro">
+        ${pros(3, 'pros-mini')}
         <h2>${tr('lesson.pro')}</h2>
         <ul>${lesson.callAPro.map((sign) => `<li>${esc(sign)}</li>`).join('')}</ul>
-        ${outLink(SERVICES_URL, 'btn btn-outline', tr('lesson.proCta'))}
+        ${outLink(SERVICES_URL, 'btn btn-primary', tr('lesson.proCta'))}
       </section>`
     : '';
 
@@ -329,13 +432,13 @@ function lessonScreen(track, lesson) {
     html: `
       <div class="screen lesson${done ? ' is-done' : ''}">
         ${topbar(`${track.name[locale]} · ${i + 1}/${list.length}`)}
-        <header class="hero lesson-hero">
-          <p class="eyebrow">${tr('track.lesson')} ${i + 1}</p>
-          <h1 tabindex="-1">${esc(lesson.title)}</h1>
-          <p class="hero-lead">${esc(lesson.summary)}</p>
-        </header>
-        <article class="sheet">
-          <div class="chips">${chips(lesson)}<span class="chip chip-low done-chip">${ICON.check}${tr('lesson.isDone')}</span></div>
+        <article class="content">
+          <header class="lesson-head">
+            <p class="lesson-kicker">${emojiDisc(trackEmoji(track), 'small')}<span>${tr('track.lesson')} ${i + 1}</span></p>
+            <h1 tabindex="-1">${esc(lesson.title)}</h1>
+            <p class="lead">${esc(lesson.summary)}</p>
+            <div class="chips">${chips(lesson)}<span class="chip chip-low done-chip">${ICON.check}${tr('lesson.isDone')}</span></div>
+          </header>
           ${safety}
           <section class="card tools">
             <h2>${tr('lesson.tools')}</h2>

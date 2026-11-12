@@ -1,7 +1,7 @@
 // Interface text (B14) and the links into the store (B19, B20, B38, B39).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { dir, STRINGS, t } from '../www/js/i18n.js';
 import { SHELVES, shelfUrl, storeUrl } from '../www/js/shelves.js';
 import { STORE_URL } from '../www/js/config.js';
@@ -60,13 +60,25 @@ test('every shelf has a French and an Arabic slug and name', () => {
   }
 });
 
-// B47: every track has its icon; B54: the mobile platform rules hold.
-test('every track has an icon', async () => {
-  const { existsSync } = await import('node:fs');
-  const { TRACKS } = await import('../www/js/tracks.js');
+// B47: every track has its pictures; B54: the mobile platform rules hold.
+test('every track has its de9de9.dz pictures: emoji, group emoji and scene', async () => {
+  const { groupEmoji, trackEmoji, trackScene, TRACKS } = await import('../www/js/tracks.js');
   for (const track of TRACKS) {
-    assert.ok(existsSync(new URL(`../www/assets/icons/${track.id}.svg`, import.meta.url)), `${track.id}.svg`);
+    // A sub-category emoji, or the group's when de9de9.dz has none.
+    assert.match(track.emoji, /^(subcategory-emoji\/[a-z-]+|category-emoji\/[a-z-]+)$/, track.id);
+    for (const file of [trackEmoji(track), groupEmoji(track), trackScene(track)]) {
+      assert.ok(existsSync(new URL(`../www/${file}`, import.meta.url)), `${track.id}: ${file}`);
+    }
   }
+});
+
+test('every picture the screens name ships with the app', () => {
+  const main = readFileSync(new URL('../www/js/main.js', import.meta.url), 'utf8');
+  const named = [...main.matchAll(/img\('([a-z0-9-]+)'/g)].map((m) => `assets/brand-site/${m[1]}.webp`)
+    .concat([...main.matchAll(/'(assets\/[a-z0-9/-]+\.webp)'/g)].map((m) => m[1]));
+  const social = [...readFileSync(new URL('../www/js/config.js', import.meta.url), 'utf8').matchAll(/icon: '([a-z]+)'/g)].map((m) => `assets/brand-site/social-${m[1]}.webp`);
+  assert.ok(named.length > 8 && social.length === 4);
+  for (const file of [...named, ...social]) assert.ok(existsSync(new URL(`../www/${file}`, import.meta.url)), file);
 });
 
 test('zoom is never locked, and every :hover waits for a real pointer', () => {

@@ -92,12 +92,13 @@
   --warning-deep: #9a6300;
 
   --shadow-card: 0 6px 24px rgba(43, 52, 69, 0.07);
+  --shadow-pop: 0 16px 48px rgba(33, 37, 41, 0.18);
   --radius-card: 16px;
   --radius-field: 10px;
-  --radius-sheet: 28px; /* the sheet over the teal top, and de9de9.dz's panels */
   --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
 
-  /* The teal top of every screen, and what reads on it. */
+  /* Teal that carries white text (the stat card, « Pourquoi », the footer),
+     and white text's secondary shade on it. The bright --brand carries none. */
   --top: var(--brand-deep);
   --on-top-muted: rgba(255, 255, 255, 0.92);
 
@@ -168,17 +169,29 @@ h1:focus { outline: none; }
 .btn:active, .icon-btn:active, .lang-btn:active { transform: scale(0.96); }
 
 /* ---------- Screens ---------- */
-/* Every screen follows de9de9.dz, the client's services site: a teal top
-   (the hero, under the sticky top bar on inner screens), then the content on
-   a rounded sheet laid over it. The slide-in animation briefly moves a screen
-   sideways; without `clip`, phones widen the page to fit it. `clip` keeps the
-   sticky top bar working. */
+/* The language of de9de9.dz, the client's services site, as the store took
+   it on 2026-11-09 (laarrbbi/de9de9: components/home/brand-site.tsx,
+   category-band.tsx, category/category-hero.tsx, site-footer.tsx): a white
+   header, the bright teal band of 3D emojis, dark display titles with the
+   logo's roof and a tilted coral pill, teal arches and panels, white cards.
+   The slide-in animation briefly moves a screen sideways; without `clip`,
+   phones widen the page to fit it. `clip` keeps the sticky top bar working. */
 #app { display: block; overflow-x: clip; }
 .screen {
   max-width: 560px;
   min-height: 100dvh;
   margin-inline: auto;
   padding-bottom: calc(32px + var(--sab));
+}
+.screen.home { padding-bottom: 0; }
+.content { padding-inline: var(--gutter); }
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 .enter-forward, .enter-back { animation: enter 220ms var(--ease-out) both; }
@@ -188,42 +201,64 @@ h1:focus { outline: none; }
 }
 @media (prefers-reduced-motion: reduce) {
   .enter-forward, .enter-back { animation: none; }
-  .tap, .btn, .icon-btn, .lang-btn, .topbar-title { transition: none; }
+  .tap, .btn, .icon-btn, .lang-btn, .topbar-title, .band-disc { transition: none; }
 }
 
-/* The teal top. White text on --top passes AA (5.3:1); secondary text is
-   white at 92 % (4.7:1). */
-.hero {
-  padding: 4px 20px 52px;
-  background: var(--top);
-  color: #fff;
+/* White bars: the home header and the inner screens' top bar. */
+.appbar, .topbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: calc(64px + var(--sat));
+  padding: var(--sat) 16px 0;
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
 }
-.hero h1 { font-size: 26px; font-weight: 800; letter-spacing: -0.01em; }
-[dir='rtl'] .hero h1 { font-weight: 700; letter-spacing: 0; }
-.hero-lead { margin-top: 8px; color: var(--on-top-muted); font-size: 15px; }
-.hero .eyebrow { color: var(--on-top-muted); }
-
-.sheet {
-  position: relative;
-  margin-top: -28px;
-  padding: 20px var(--gutter) 0;
-  border-radius: var(--radius-sheet) var(--radius-sheet) 0 0;
-  background: var(--canvas);
-}
-
-/* Top bar on inner screens: teal, like the hero it sits on. */
 .topbar {
   position: sticky;
   top: 0;
   z-index: 10;
-  display: flex;
-  align-items: center;
   gap: 4px;
   min-height: calc(56px + var(--sat));
-  padding: var(--sat) 8px 0;
-  background: var(--top);
-  color: #fff;
+  padding-inline: 8px;
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: saturate(1.4) blur(10px);
 }
+.appbar-logo { width: 49px; height: auto; }
+.app-tag {
+  padding: 2px 12px;
+  border-radius: 999px;
+  background: var(--brand-tint);
+  color: var(--brand-deep);
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+}
+/* « Français | العربية », the active one filled (the store's switch). */
+.lang-switch {
+  display: flex;
+  margin-inline-start: auto;
+  padding: 3px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  box-shadow: var(--shadow-card);
+}
+.lang-on, .lang-btn {
+  display: grid;
+  place-items: center;
+  min-height: 38px;
+  padding: 0 12px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 600;
+}
+.lang-on { background: var(--brand-deep); color: #fff; }
+.lang-btn { border: 0; background: transparent; color: var(--ink-muted); cursor: pointer; }
+.lang-btn:active { background: var(--brand-tint); }
+:is(.lang-on, .lang-btn):lang(ar) { font-family: 'Cairo', system-ui, sans-serif; }
+:is(.lang-on, .lang-btn):lang(fr) { font-family: 'Plus Jakarta Sans', system-ui, sans-serif; }
+
 .icon-btn {
   display: grid;
   place-items: center;
@@ -232,9 +267,10 @@ h1:focus { outline: none; }
   border: 0;
   border-radius: 999px;
   background: transparent;
+  color: var(--ink);
   cursor: pointer;
 }
-.icon-btn:active { background: rgba(255, 255, 255, 0.16); }
+.icon-btn:active { background: var(--canvas); }
 .icon-btn .i { width: 24px; height: 24px; }
 .topbar-title {
   overflow: hidden;
@@ -245,35 +281,53 @@ h1:focus { outline: none; }
   transition: opacity 150ms var(--ease-out);
 }
 .topbar-title.is-hidden { opacity: 0; }
-.topbar :focus-visible, .hero :focus-visible, .pro-banner :focus-visible { outline-color: #fff; }
+
+/* de9de9.dz's teal band: white 60 px discs, 44 px emojis, the soft shadow. */
+.band { padding: 22px 16px; background: var(--brand); }
+.band ul { list-style: none; margin: 0; padding: 0; display: flex; justify-content: space-around; gap: 12px; }
+.band-disc {
+  display: grid;
+  place-items: center;
+  width: 60px;
+  height: 60px;
+  border-radius: 999px;
+  background: var(--surface);
+  box-shadow: 0 4px 21px rgba(0, 0, 0, 0.25);
+  transition: transform 150ms var(--ease-out);
+}
+.band-disc img { width: 44px; height: 44px; object-fit: contain; }
+.band-disc:active { transform: scale(0.94); }
 
 /* ---------- Shared pieces ---------- */
 .card { background: var(--surface); border-radius: var(--radius-card); box-shadow: var(--shadow-card); }
 
-.eyebrow {
+.eyebrow, .group-tag {
   color: var(--ink-muted);
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
-[dir='rtl'] .eyebrow { letter-spacing: 0; }
+[dir='rtl'] :is(.eyebrow, .group-tag) { letter-spacing: 0; }
+.group-tag { display: inline-flex; align-items: center; gap: 6px; }
+.group-tag img { width: 18px; height: 18px; object-fit: contain; }
 
-.icon-chip {
+/* A 3D emoji on its white disc (de9de9.dz: white disc, soft shadow, never
+   recoloured). */
+.emoji-disc {
   display: grid;
   place-items: center;
   flex: none;
-  width: 52px;
-  height: 52px;
-  border-radius: 14px;
-  background: var(--brand-tint);
+  width: 56px;
+  height: 56px;
+  border-radius: 999px;
+  background: var(--surface);
+  box-shadow: 0 4px 21px rgba(0, 0, 0, 0.14);
 }
-.icon-chip img { width: 32px; height: 32px; }
-.icon-chip.small { width: 42px; height: 42px; border-radius: 12px; }
-.icon-chip.small img { width: 26px; height: 26px; }
-.icon-chip.big { width: 68px; height: 68px; border-radius: 18px; }
-.icon-chip.big img { width: 42px; height: 42px; }
-.hero .icon-chip { background: var(--surface); }
+.emoji-disc img { width: 70%; height: 70%; object-fit: contain; }
+.emoji-disc.small { width: 40px; height: 40px; }
+
+.section-title { margin: 32px 4px 14px; color: var(--brand-deep); font-size: 22px; font-weight: 700; }
 
 .progress { display: block; height: 6px; border-radius: 999px; background: var(--line); overflow: hidden; }
 .progress > i { display: block; height: 100%; border-radius: inherit; background: var(--brand); }
@@ -303,7 +357,7 @@ h1:focus { outline: none; }
   justify-content: center;
   gap: 8px;
   min-height: 48px;
-  padding: 12px 22px;
+  padding: 12px 24px;
   border: 1px solid transparent;
   border-radius: 999px;
   font-size: 15px;
@@ -317,8 +371,8 @@ h1:focus { outline: none; }
 .btn-primary:active { background: var(--brand-deeper); }
 .btn-outline { background: var(--surface); color: var(--ink); border-color: var(--line); }
 .btn-outline:active { background: var(--canvas); }
-.btn-white { background: var(--surface); color: var(--accent-deep); box-shadow: 0 8px 20px -8px rgba(33, 37, 41, 0.35); }
-.btn-white:active { background: var(--accent-tint); }
+.btn-coral { background: var(--accent-deep); color: #fff; box-shadow: var(--shadow-pop); }
+.btn-coral:active { background: #b52830; }
 .btn .out { width: 16px; height: 16px; opacity: 0.7; }
 
 .chev { width: 20px; height: 20px; color: var(--brand-deep); }
@@ -327,49 +381,79 @@ h1:focus { outline: none; }
   .tap:hover { box-shadow: 0 10px 32px rgba(43, 52, 69, 0.12); }
   .btn-primary:hover { background: var(--brand-deeper); }
   .btn-outline:hover { border-color: var(--brand); color: var(--brand-deep); }
-  .btn-white:hover { background: var(--accent-tint); }
-  .icon-btn:hover, .lang-btn:hover { background: rgba(255, 255, 255, 0.16); }
+  .btn-coral:hover { background: #b52830; }
+  .icon-btn:hover { background: var(--canvas); }
+  .lang-btn:hover { background: var(--brand-tint); color: var(--brand-deep); }
+  .band-disc:hover { transform: scale(1.05); box-shadow: 0 4px 21px rgba(0, 0, 0, 0.3), 0 0 0 2px rgba(101, 203, 196, 0.3); }
+  .social:hover { background: rgba(255, 255, 255, 0.25); }
 }
 
 /* ---------- Home ---------- */
-.home-head { padding: calc(var(--sat) + 14px) 20px 56px; }
-.home-bar { display: flex; align-items: center; gap: 10px; margin-bottom: 22px; }
-/* The client's logo, never recoloured: on teal it sits on a white tile
-   (DESIGN-SYSTEM.md §6), since half its letters are teal. */
-.logo-tile {
+/* The hero of de9de9.dz: a centred dark display title on a soft teal glow,
+   the roof over one letter, the tilted coral pill, the three steps. */
+.home-hero {
+  position: relative;
+  isolation: isolate;
+  padding: 30px 0 22px;
+  text-align: center;
+}
+.home-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0 -16px;
+  z-index: -1;
+  background: radial-gradient(60% 70% at 50% 0%, rgba(223, 244, 242, 0.95), rgba(223, 244, 242, 0) 100%);
+}
+.home-hero h1 { font-size: 33px; font-weight: 700; line-height: 1.15; letter-spacing: -0.02em; }
+[dir='rtl'] .home-hero h1 { font-size: 31px; letter-spacing: 0; }
+.hero-line { display: block; }
+.roof-word { white-space: nowrap; }
+.roof { position: relative; display: inline-block; }
+.roof-art {
+  position: absolute;
+  inset-inline-start: 50%;
+  top: -0.34em;
+  width: 1.3em;
+  max-width: none;
+  height: auto;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+[dir='rtl'] .roof-art { transform: translateX(50%); }
+/* White on --accent passes AA at this size (large text, 3.9:1). */
+.hero-pill {
+  display: inline-block;
+  margin-top: 12px;
+  padding: 2px 18px 8px;
+  border-radius: 16px;
+  background: var(--accent);
+  color: #fff;
+  transform: rotate(-2deg);
+  box-shadow: var(--shadow-pop);
+}
+.hero-sub { max-width: 34ch; margin: 18px auto 0; color: var(--ink-muted); font-size: 15px; }
+.steps {
+  list-style: none;
+  display: flex;
+  justify-content: center;
+  gap: 18px;
+  margin: 18px 0 0;
+  padding: 0;
+  font-size: 13px;
+  font-weight: 600;
+}
+.steps li { display: flex; align-items: center; gap: 6px; }
+.step-n {
   display: grid;
   place-items: center;
-  width: 52px;
-  height: 52px;
-  border-radius: 14px;
-  background: var(--surface);
-}
-.logo-tile img { width: 40px; height: auto; }
-.app-tag {
-  padding: 2px 12px;
+  width: 24px;
+  height: 24px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.16);
-  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
-  font-size: 14px;
+  background: var(--brand-tint);
+  color: var(--brand-deep);
+  font-size: 11px;
   font-weight: 700;
 }
-.lang-btn {
-  margin-inline-start: auto;
-  min-height: 44px;
-  padding: 6px 16px;
-  border: 1px solid rgba(255, 255, 255, 0.7);
-  border-radius: 999px;
-  background: transparent;
-  color: #fff;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-}
-.lang-btn:lang(ar) { font-family: 'Cairo', system-ui, sans-serif; }
-.lang-btn:lang(fr) { font-family: 'Plus Jakarta Sans', system-ui, sans-serif; }
-.lang-btn:active { background: rgba(255, 255, 255, 0.16); }
-.home-head h1 { font-size: 30px; }
-[dir='rtl'] .home-head h1 { font-size: 28px; }
 
 .progress-card { padding: 18px; display: grid; gap: 12px; }
 .pc-top { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; color: var(--ink-muted); font-size: 14px; font-weight: 500; }
@@ -390,8 +474,21 @@ h1:focus { outline: none; }
 .resume strong { font-size: 15px; font-weight: 700; line-height: 1.35; }
 .all-done { display: flex; align-items: center; gap: 8px; color: var(--success-deep); font-weight: 600; }
 
-.list-title { margin: 28px 4px 12px; color: var(--brand-deep); font-size: 21px; font-weight: 800; }
-[dir='rtl'] .list-title { font-weight: 700; }
+/* The 3D house with a stat card, as in de9de9.dz's hero (real figures only). */
+.showcase { margin-top: 28px; }
+.house { width: 100%; height: auto; border-radius: 32px; }
+.stat-card {
+  position: relative;
+  margin: -44px 20px 0;
+  padding: 18px 22px;
+  border-radius: 28px;
+  background: var(--top);
+  color: #fff;
+  box-shadow: 0 20px 25px -5px rgba(101, 203, 196, 0.35);
+}
+.stat-big { font-size: 30px; font-weight: 700; line-height: 1.1; letter-spacing: -0.01em; }
+.stat-text { margin-top: 6px; color: var(--on-top-muted); font-size: 13px; font-weight: 500; }
+
 .track-list, .lesson-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
 .track-row, .lesson-row {
   display: flex;
@@ -405,41 +502,54 @@ h1:focus { outline: none; }
 .row-meta { color: var(--ink-muted); font-size: 13px; }
 .track-row .progress { margin-top: 6px; }
 
-/* « Pourquoi … ? »: de9de9.dz's tilted title over its teal panel and ant. */
-.why { margin-top: 36px; --tilt: -1.5deg; }
+/* « Pourquoi ? »: the tilted teal title, the 3D cards, the panel with the ant. */
+.why { margin-top: 40px; --tilt: -1.5deg; }
 [dir='rtl'] .why { --tilt: 1.5deg; }
 .why-title {
   position: relative;
   z-index: 1;
-  margin-inline: 6px;
-  padding: 16px 20px;
+  margin-inline: 4px;
+  padding: 18px 20px;
   border-radius: 40px;
   background: var(--top);
   color: #fff;
-  font-size: 21px;
+  font-size: 22px;
   font-weight: 800;
   text-align: center;
   transform: rotate(var(--tilt));
   box-shadow: 0 18px 40px -12px rgba(101, 203, 196, 0.6);
 }
 [dir='rtl'] .why-title { font-weight: 700; }
+.why-cards { list-style: none; margin: 24px 0 0; padding: 0; display: grid; gap: 12px; }
+.why-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px;
+  border-radius: 24px;
+  background: var(--surface);
+  box-shadow: var(--shadow-card);
+}
+.why-card img { flex: none; width: 64px; height: 56px; object-fit: contain; }
+.why-card h3 { color: var(--brand-deep); font-size: 16px; font-weight: 700; }
+.why-card p { margin-top: 2px; color: var(--ink-muted); font-size: 14px; line-height: 1.5; }
 .why-panel {
   display: grid;
   justify-items: center;
-  gap: 14px;
-  margin-top: -18px;
-  padding: 36px 16px 18px;
-  border-radius: var(--radius-sheet);
+  gap: 16px;
+  margin-top: 16px;
+  padding: 24px 16px 18px;
+  border-radius: 32px;
   background: var(--brand);
 }
-.ant { width: 104px; height: auto; }
+.ant { width: 112px; height: auto; }
 .why-list { list-style: none; width: 100%; margin: 0; padding: 0; display: grid; gap: 10px; }
 .why-list li {
   display: flex;
   align-items: center;
   gap: 12px;
   padding: 12px 14px;
-  border-radius: var(--radius-card);
+  border-radius: 16px;
   background: var(--surface);
   box-shadow: var(--shadow-card);
   font-size: 15px;
@@ -473,44 +583,163 @@ h1:focus { outline: none; }
 .promo-cta { display: inline-flex; align-items: center; gap: 4px; margin-top: 6px; color: var(--brand-deep); font-size: 14px; font-weight: 700; }
 .promo-cta .i { width: 16px; height: 16px; }
 
-/* The coral banner of de9de9.dz, with its white pill button: here it sends
-   the reader to the services site. White on --accent-deep passes AA (5.1:1). */
-.pro-banner {
+/* « Besoin d'un pro ? »: de9de9.dz's band for its services app — the coral
+   roof drawn at a fixed width (its slope must not run through the title),
+   the six pros, the hand holding the app. */
+.app-promo {
   position: relative;
+  margin-top: 40px;
+  padding: 28px 20px 0;
+  overflow: hidden;
+  border-radius: 32px;
+  background: var(--surface);
+  box-shadow: var(--shadow-card);
+  text-align: center;
+}
+.roof-band {
+  position: absolute;
+  inset-inline-start: 50%;
+  top: 0;
+  width: 560px;
+  max-width: none;
+  height: auto;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+[dir='rtl'] .roof-band { transform: translateX(50%) scaleX(-1); }
+.pros {
+  position: relative;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 6px;
+  max-width: 320px;
+  margin: 0 auto;
+  padding: 0;
+}
+.pros li:nth-child(even) { transform: translateY(14px); }
+.pros img, .pros-mini img { width: 100%; height: auto; }
+.app-promo-copy { position: relative; padding: 72px 0 8px; }
+.app-promo h2 { font-size: 26px; font-weight: 800; line-height: 1.2; }
+[dir='rtl'] .app-promo h2 { font-weight: 700; }
+.app-promo h2 span { display: block; color: var(--accent-deep); }
+.app-promo p { max-width: 34ch; margin: 10px auto 0; color: var(--ink-muted); font-size: 15px; }
+.app-promo .btn { margin-top: 18px; }
+.phone-hand { position: relative; width: 210px; height: auto; margin: 16px auto 0; }
+
+/* The coral « Qu'attendez-vous ? » ribbon, the ant and the last button. */
+.cta { margin-top: 48px; padding-bottom: 40px; text-align: center; }
+.ribbon {
+  margin-inline: calc(-1 * var(--gutter) - 8px);
+  padding: 18px 16px;
+  background: var(--accent);
+  color: #fff;
+  transform: rotate(-2deg);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.12);
+}
+[dir='rtl'] .ribbon { transform: rotate(2deg); }
+.ribbon h2 { font-size: 24px; font-weight: 800; }
+[dir='rtl'] .ribbon h2 { font-weight: 700; }
+.cta .ant { margin: 36px auto 0; width: 104px; }
+.cta-title { max-width: 18ch; margin: 14px auto 0; color: var(--brand-deep); font-size: 26px; font-weight: 800; line-height: 1.2; text-wrap: balance; }
+[dir='rtl'] .cta-title { font-weight: 700; }
+.cta .btn { margin-top: 20px; }
+
+/* The teal wave into the footer (de9de9.dz), in the deep teal so its white
+   text passes AA. */
+.foot { margin-top: 16px; color: #fff; }
+.wave { display: block; width: 100%; height: 40px; fill: var(--top); }
+.foot-body {
   display: grid;
   justify-items: start;
-  gap: 8px;
-  margin-top: 24px;
-  padding: 22px 20px;
-  overflow: hidden;
-  border-radius: var(--radius-sheet);
-  background: var(--accent-deep);
-  color: #fff;
+  gap: 10px;
+  margin-top: -1px;
+  padding: 8px 24px calc(32px + var(--sab));
+  background: var(--top);
 }
-.pro-banner::before {
-  content: '';
-  position: absolute;
-  inset-inline-end: -40px;
-  top: -48px;
-  width: 150px;
-  height: 150px;
-  border-radius: 50%;
+.logo-tile {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  background: var(--surface);
+}
+.logo-tile img { width: 42px; height: auto; }
+.foot-note { color: var(--on-top-muted); font-size: 14px; }
+.foot h2 {
+  margin-top: 14px;
+  color: var(--on-top-muted);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+[dir='rtl'] .foot h2 { letter-spacing: 0; }
+.foot-body > p:not(.foot-note) { color: var(--on-top-muted); font-size: 14px; }
+.badges { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 4px; }
+.badges a { display: block; border-radius: 8px; }
+.badges img { width: auto; height: 42px; border-radius: 8px; }
+.socials { list-style: none; display: flex; gap: 10px; margin: 0; padding: 0; }
+.social {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 999px;
   background: rgba(255, 255, 255, 0.1);
 }
-.pro-banner h2 { position: relative; font-size: 21px; font-weight: 800; line-height: 1.25; }
-[dir='rtl'] .pro-banner h2 { font-weight: 700; }
-.pro-banner p { position: relative; font-size: 14px; }
-.pro-banner .btn { margin-top: 8px; }
-
-.note { margin: 24px 4px 0; color: var(--ink-muted); font-size: 13px; text-align: center; }
+.social:active { background: rgba(255, 255, 255, 0.25); }
+.social img { width: 28px; height: 28px; }
+.foot :focus-visible { outline-color: #fff; }
 
 /* ---------- Track ---------- */
-.th-top { display: flex; align-items: center; gap: 14px; }
-.track-hero .hero-lead { margin-top: 14px; }
-.track-head { padding: 18px; display: grid; gap: 14px; }
+/* The head of a de9de9.dz group page: name and copy on a teal-tint fade,
+   the arch with the group's scene beside it, the track's emoji on top. */
+.track-hero {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 16px;
+  padding: 22px 18px;
+  border-radius: 24px;
+  background: linear-gradient(180deg, rgba(223, 244, 242, 0.75), rgba(223, 244, 242, 0));
+}
+.th-copy { flex: 1; min-width: 0; display: grid; gap: 6px; }
+.track-hero h1 { font-size: 30px; font-weight: 700; line-height: 1.08; letter-spacing: -0.02em; text-wrap: balance; }
+[dir='rtl'] .track-hero h1 { letter-spacing: 0; }
+.tagline { color: var(--ink-muted); font-size: 14px; }
+.arch { position: relative; flex: none; width: 112px; height: 168px; }
+.arch-shape {
+  position: absolute;
+  inset: 24px 0 0;
+  border-radius: 999px 999px 0 0;
+  background: var(--brand);
+}
+.arch-scene {
+  position: absolute;
+  bottom: 2px;
+  inset-inline-start: 50%;
+  width: 136px;
+  max-width: none;
+  height: auto;
+  transform: translateX(-50%);
+}
+[dir='rtl'] .arch-scene { transform: translateX(50%); }
+.arch-bubble {
+  position: absolute;
+  top: 0;
+  inset-inline-start: 50%;
+  width: 52px;
+  height: 52px;
+  transform: translateX(-50%);
+}
+[dir='rtl'] .arch-bubble { transform: translateX(50%); }
+
+.track-head { margin-top: 16px; padding: 18px; display: grid; gap: 14px; }
 .th-progress { display: grid; gap: 6px; color: var(--ink-muted); font-size: 13px; font-weight: 500; }
 
-.lesson-list { margin-top: 16px; }
 .lesson-row { align-items: flex-start; }
 .lesson-row .chev { margin-top: 8px; }
 .row-summary { color: var(--ink-muted); font-size: 14px; margin-bottom: 6px; }
@@ -531,14 +760,41 @@ h1:focus { outline: none; }
 .is-done .num .i { display: block; }
 
 /* ---------- Lesson ---------- */
-.lesson-hero h1 { margin-top: 4px; font-size: 25px; }
+.lesson-head {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  gap: 10px;
+  padding: 24px 0 4px;
+}
+.lesson-head::before {
+  content: '';
+  position: absolute;
+  inset: 0 -16px;
+  z-index: -1;
+  background: linear-gradient(180deg, rgba(223, 244, 242, 0.75), rgba(223, 244, 242, 0));
+}
+.lesson-kicker {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--brand-deep);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+[dir='rtl'] .lesson-kicker { letter-spacing: 0; }
+.lesson-head h1 { font-size: 28px; font-weight: 700; line-height: 1.15; letter-spacing: -0.02em; }
+[dir='rtl'] .lesson-head h1 { letter-spacing: 0; }
+.lead { color: var(--ink-muted); font-size: 16px; }
 .done-chip { display: none; }
 .lesson.is-done .done-chip { display: inline-flex; }
 
 .safety {
   display: flex;
   gap: 12px;
-  margin-top: 16px;
+  margin-top: 18px;
   padding: 16px;
   border-radius: var(--radius-card);
   border-inline-start: 4px solid currentColor;
@@ -550,7 +806,7 @@ h1:focus { outline: none; }
 .safety .safety-title { color: inherit; font-size: 15px; font-weight: 700; margin-bottom: 2px; }
 
 .tools { margin-top: 16px; padding: 16px 18px; }
-.tools h2, .pro h2 { font-size: 17px; font-weight: 700; }
+.tools h2 { font-size: 17px; font-weight: 700; }
 .tools ul { list-style: none; margin: 8px 0 0; padding: 0; }
 .tools li {
   display: flex;
@@ -578,8 +834,7 @@ h1:focus { outline: none; }
 
 .prose { margin-top: 4px; font-size: 16px; }
 [dir='rtl'] .prose { font-size: 17px; }
-.prose h2 { margin-top: 30px; color: var(--brand-deep); font-size: 20px; font-weight: 800; }
-[dir='rtl'] .prose h2 { font-weight: 700; }
+.prose h2 { margin-top: 30px; color: var(--brand-deep); font-size: 21px; font-weight: 700; }
 .prose h3 { margin-top: 22px; font-size: 17px; font-weight: 700; }
 .prose p { margin-top: 12px; }
 .prose ul, .prose ol { margin: 12px 0 0; padding-inline-start: 22px; }
@@ -610,22 +865,24 @@ h1:focus { outline: none; }
 .prose th, .prose td { padding: 10px 12px; text-align: start; vertical-align: top; border-top: 1px solid var(--line); min-width: 96px; }
 .prose th { background: var(--canvas); font-weight: 700; border-top: 0; }
 
+/* « Call a pro »: three of de9de9.dz's pros over the signs to stop. */
 .pro {
   margin-top: 28px;
-  padding: 18px;
+  padding: 20px 18px 18px;
   border: 1px solid var(--accent-soft);
-  border-radius: var(--radius-card);
+  border-radius: 24px;
   background: var(--surface);
 }
-.pro h2 { color: var(--accent-deep); }
-.pro ul { margin: 10px 0 16px; padding-inline-start: 20px; display: grid; gap: 6px; font-size: 14px; }
+.pros-mini { list-style: none; display: flex; margin: 0 0 12px; padding: 0; }
+.pros-mini li { width: 34px; margin-inline-end: -6px; }
+.pro h2 { color: var(--accent-deep); font-size: 18px; font-weight: 700; }
+.pro ul:not(.pros-mini) { margin: 10px 0 16px; padding-inline-start: 20px; display: grid; gap: 6px; font-size: 14px; }
 .pro li::marker { color: var(--accent); }
 .pro .btn { width: 100%; }
 
 /* Quiz */
-.quiz { margin-top: 28px; padding: 20px 18px; }
-.quiz h2 { color: var(--brand-deep); font-size: 20px; font-weight: 800; }
-[dir='rtl'] .quiz h2 { font-weight: 700; }
+.quiz { margin-top: 28px; padding: 20px 18px; border-radius: 24px; }
+.quiz h2 { color: var(--brand-deep); font-size: 21px; font-weight: 700; }
 .quiz-lead { color: var(--ink-muted); margin-top: 2px; }
 .questions { list-style: none; margin: 18px 0 0; padding: 0; display: grid; gap: 22px; }
 fieldset { border: 0; margin: 0; padding: 0; min-width: 0; }
@@ -668,14 +925,14 @@ fieldset:disabled .option { cursor: default; }
 .status { margin-top: 16px; font-weight: 700; }
 .status:empty { margin-top: 0; }
 .actions { display: grid; gap: 8px; margin-top: 16px; }
-/* The pass: the ant of de9de9.dz cheers on a teal tint. */
+/* The pass: de9de9.dz's ant cheers on a teal tint. */
 .success {
   display: grid;
   justify-items: center;
   gap: 10px;
   margin-top: 8px;
   padding: 20px 18px 22px;
-  border-radius: var(--radius-card);
+  border-radius: 20px;
   background: var(--brand-tint);
   text-align: center;
 }

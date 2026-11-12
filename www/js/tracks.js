@@ -1,8 +1,16 @@
 // A track is a short course on one store shelf. Its lessons live in
 // content/lessons/<locale>/<track id>/, one Markdown file per lesson and
-// language. To add a track: add it here, draw www/assets/icons/<id>.svg,
-// and write its lessons in both languages. `shelf` is the store shelf that
-// sells the track's tools, or null when no shelf does (no button is shown).
+// language. To add a track: add it here, copy its pictures (below) into
+// www/assets/, and write its lessons in both languages. `shelf` is the store
+// shelf that sells the track's tools, or null when no shelf does (no button
+// is shown).
+//
+// The pictures are de9de9.dz's own 3D art, as the store ships it
+// (laarrbbi/de9de9, apps/storefront/src/assets/): `emoji` is the sub-category
+// emoji of the same trade (subcategory-emoji/<emoji>.webp), or the group's
+// (category-emoji/<group>.webp) when de9de9.dz has none, never a picture of
+// something else; `scene` is the group's scene (category-scene/<scene>.webp);
+// `groupEmoji` the group's emoji.
 export const TRACKS = [
   {
     id: 'plomberie',
@@ -13,6 +21,9 @@ export const TRACKS = [
     },
     group: { fr: 'Travaux', ar: 'أشغال' },
     shelf: 'travaux-plomberie',
+    emoji: 'subcategory-emoji/travaux-plomberie',
+    groupEmoji: 'travaux',
+    scene: 'travaux',
   },
   {
     id: 'electricite',
@@ -23,6 +34,9 @@ export const TRACKS = [
     },
     group: { fr: 'Travaux', ar: 'أشغال' },
     shelf: 'travaux-electricite',
+    emoji: 'subcategory-emoji/travaux-electricite',
+    groupEmoji: 'travaux',
+    scene: 'travaux',
   },
   {
     id: 'climatisation',
@@ -33,6 +47,9 @@ export const TRACKS = [
     },
     group: { fr: 'Travaux', ar: 'أشغال' },
     shelf: 'travaux-climatisation',
+    emoji: 'subcategory-emoji/travaux-climatisation',
+    groupEmoji: 'travaux',
+    scene: 'travaux',
   },
   {
     id: 'magie',
@@ -45,7 +62,16 @@ export const TRACKS = [
     // No shelf yet: the store sells no playing cards. Musique et spectacle
     // (evenement-musique-spectacle) only has speakers, lights and microphones.
     shelf: null,
+    // de9de9.dz has no card-magic service: the group's party popper.
+    emoji: 'category-emoji/evenement',
+    groupEmoji: 'evenement',
+    scene: 'evenement',
   },
 ];
 
 export const LOCALES = ['fr', 'ar'];
+
+// Picture paths, relative to www/.
+export const trackEmoji = (track) => `assets/${track.emoji}.webp`;
+export const groupEmoji = (track) => `assets/category-emoji/${track.groupEmoji}.webp`;
+export const trackScene = (track) => `assets/category-scene/${track.scene}.webp`;

@@ -7,9 +7,12 @@ the store, says when to stop and call a professional, and ends with a quiz.
 
 French and Arabic (right to left), with the store's brand and design tokens
 (`laarrbbi/de9de9`, `docs/design/DESIGN-SYSTEM.md`) and the look of
-de9de9.dz, the client's services site: a teal top on every screen, the
-content on a rounded sheet over it, the tilted « Pourquoi » title, the coral
-banner and the ant mascot. Built like De9De9 Play:
+de9de9.dz, the client's services site, as the store took it: a white
+header over the teal band of 3D emoji discs, the display title with the
+logo's roof and the tilted coral pill, each track opening on a teal arch with
+its 3D scene, « Pourquoi ? », the « Besoin d'un pro ? » band with the pros,
+the coral ribbon, the ant mascot and the teal wave footer. Every picture is
+de9de9.dz's own, copied from the store (`apps/storefront/src/assets/`). Built like De9De9 Play:
 one web codebase (`www/`), wrapped for iOS and Android with Capacitor. All
 lessons ship inside the app, so it works offline.
 
@@ -69,8 +72,9 @@ Finished lessons are kept on the phone and count in both languages.
 | `www/js/i18n.js` | Interface text in both languages |
 | `www/js/quiz.js` · `progress.js` · `routes.js` | Quiz, saved progress and language, screen addresses |
 | `www/css/style.css` | Design tokens and styles |
-| `www/assets/icons/<track>.svg` | Track icons, in the store's icon style |
-| `www/assets/de9de9-logo.webp`, `ant.webp` | The client's logo and ant mascot, as the store ships them (`apps/storefront/src/assets/`) |
+| `www/assets/subcategory-emoji/`, `category-emoji/`, `category-scene/` | de9de9.dz's 3D emojis (sub-categories and groups) and group scenes, for the tracks |
+| `www/assets/brand-site/` | de9de9.dz's landing art: ant, roofs, house, pros, phone, clock, lock, app badges, social icons |
+| `www/assets/de9de9-logo.webp` | The client's logo |
 | `www/assets/fonts/` | Plus Jakarta Sans (Latin) and Cairo (Arabic), the store's faces |
 | `tests/*.test.mjs` | Unit tests (`node:test`): lessons, parity, routes, storage, links |
 | `tests/e2e/` | Browser tests of the screens, and the small server they use |
@@ -101,8 +105,12 @@ Never rename or move a published lesson file: progress is saved under
 `npm run watch` only watches `content/lessons/`. After editing
 `www/js/tracks.js` or `www/js/shelves.js`, restart it.
 
-To add a track: add it to `www/js/tracks.js`, draw `www/assets/icons/<id>.svg`,
-then write its lessons. A track's `shelf` can be `null` when no store shelf
+To add a track: add it to `www/js/tracks.js` with its pictures (the
+sub-category emoji of the same trade from the store's
+`apps/storefront/src/assets/subcategory-emoji/`, or its group's from
+`category-emoji/` when de9de9.dz has none, never a picture of something
+else; the group's scene from `category-scene/`), copy them into
+`www/assets/`, then write its lessons. A track's `shelf` can be `null` when no store shelf
 sells its tools; the track screen then shows no shop button.
 
 ## How the app behaves
@@ -120,9 +128,9 @@ sells its tools; the track screen then shows no shop button.
   tools keep their names, the track's shelf button and the store card go.
   "Find a professional" still opens de9de9.dz. The lessons keep their
   `shelf:`, so turning the switch on brings every link back.
-- **Status bar:** light icons on every screen, over the teal top, set once
-  in `capacitor.config.json` (`SystemBars.style: DARK`, i.e. for a dark
-  background), so the phone's dark mode does not change them. The app loads no `@capacitor/core`
+- **Status bar:** dark icons on every screen, over the white header, set
+  once in `capacitor.config.json` (`SystemBars.style: LIGHT`, i.e. for a
+  light background), so the phone's dark mode does not change them. The app loads no `@capacitor/core`
   JavaScript, so plugins can't be called from `www/js/` without vendoring it.
 - **Language:** the first launch follows the phone's language (Arabic phones
   get Arabic). On iOS this needs `CFBundleLocalizations` in `Info.plist`,

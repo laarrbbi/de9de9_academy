@@ -30,9 +30,15 @@ in `www/`, no framework or bundler, like the sibling app De9De9 Play
 - **Design** follows the store's `docs/design/DESIGN-SYSTEM.md` (its
   `claude/elegant-bell-b983ax` branch has the 2026-11-09 update: Plus Jakarta
   Sans, the client's logo on a white tile over teal, the de9de9.dz elements);
-  tokens live at the top of `www/css/style.css`. Every screen has the teal top
-  and the rounded sheet. White text only on `--top` (brand-deep) or
-  `--accent-deep`: on the bright `--brand` and `--accent` it fails AA. Use
+  tokens live at the top of `www/css/style.css`. The screens follow
+  de9de9.dz as the store copied it (`components/home/brand-site.tsx`,
+  `category-band.tsx`, `category/category-hero.tsx`): white header, teal
+  emoji band, roof and coral pill, arch with scene, pros band, coral ribbon,
+  teal footer. Pictures are de9de9.dz's own, never redrawn or recoloured; a
+  track shows its trade's sub-category emoji, or its group's, never a
+  picture of something else. White text only on `--top` (brand-deep),
+  `--accent-deep`, or `--accent` at large display sizes (≥24px bold); on the
+  bright `--brand` it fails AA, so that teal carries no text. Use
   logical properties (`inline-start`, `margin-inline`) so RTL mirrors itself;
   direction-bearing icons get `.flip`.
 - **Mobile platform layer:** never lock zoom; gate `:hover` behind

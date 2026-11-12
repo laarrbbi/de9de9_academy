@@ -102,7 +102,7 @@ test('B2, B17, B33, B53: a French phone opens on the French home screen, offline
 test('B17, B37, B42, B9: an Arabic phone opens in Arabic; the choice of language is kept', async () => {
   const { page, errors, close } = await open('', { context: { locale: 'ar-DZ' } });
   assert.equal(await page.getAttribute('html', 'dir'), 'rtl');
-  assert.equal(await heading(page), 'تعلّم الحركات الصحيحة.');
+  assert.equal(await heading(page), 'تعلّم الحركات الصحيحة، خطوة بخطوة');
   assert.equal(await overflows(page), false);
   await tap(page, '[data-action="lang"]');
   assert.equal(await page.getAttribute('html', 'lang'), 'fr');
@@ -182,6 +182,8 @@ test('B6: a link to the previous lesson goes back instead of stacking it', async
 
 test('B6: a double tap moves one screen, not two', async () => {
   const { page, close } = await open();
+  // Raw taps land at screen coordinates: bring the row on screen first.
+  await page.locator('.track-row >> nth=0').scrollIntoViewIfNeeded();
   await page.waitForTimeout(GUARD_MS);
   const box = await page.locator('.track-row >> nth=0').boundingBox();
   const x = box.x + box.width / 2;
@@ -228,13 +230,18 @@ test('B5: an unknown address shows the home screen and becomes #/', async () => 
 });
 
 const linksOut = (page) => page.$$eval('a[target="_blank"]', (links) => links.map((a) => a.href));
+const { APP_LINKS, SOCIAL_LINKS } = await import('../../www/js/config.js');
+// What the home screen links to outside the app, store aside: the services
+// site (« Besoin d'un pro ? »), the De9De9 app's store pages and the brand's
+// social pages, as de9de9.dz links them.
+const HOME_OUT = ['https://de9de9.dz/', APP_LINKS.googlePlay, APP_LINKS.appStore, ...SOCIAL_LINKS.map((s) => s.href)];
 
 test('B19: while the shop is not online, the app links to it nowhere; "find a pro" still opens de9de9.dz', async () => {
   for (const path of ['', '#/t/plomberie', '#/l/electricite/remplacer-une-prise']) {
     const { page, errors, close } = await open(path, { storeLive: false });
-    // The one link out left is "Trouver un professionnel" (SERVICES_URL),
-    // in the home screen's coral banner and in a lesson's "call a pro".
-    assert.deepEqual(await linksOut(page), path.startsWith('#/t/') ? [] : ['https://de9de9.dz/'], path || 'home');
+    const expected = path === '' ? HOME_OUT : path.startsWith('#/t/') ? [] : ['https://de9de9.dz/'];
+    assert.deepEqual(await linksOut(page), expected, path || 'home');
+    assert.equal(await page.locator('a[href*="utm_source=academy-app"]').count(), 0, `${path || 'home'}: no shop link`);
     if (path.startsWith('#/l/')) assert.equal(await page.locator('.tools li').count(), 5, 'the tools are still listed');
     assert.deepEqual(errors, [], path || 'home');
     await close();
@@ -267,17 +274,42 @@ test('B19, B27, B38, B49: once the shop is online, store links open outside the 
   await arabic.close();
 });
 
-test('home: "Pourquoi" gives the real range of lesson lengths, and the coral banner opens the services site', async () => {
+test('home: the band, « Pourquoi » with the real lesson lengths, the pros band and the footer links', async () => {
   const { LESSONS } = await import('../../www/js/content.js');
-  for (const [locale, words] of [['fr-FR', (a, b) => `Des leçons de ${a} à ${b} minutes`], ['ar-DZ', (a, b) => `دروس من ${a} إلى ${b} دقيقة`]]) {
+  const { TRACKS } = await import('../../www/js/tracks.js');
+  for (const [locale, words] of [['fr-FR', (a, b) => `De ${a} à ${b} minutes`], ['ar-DZ', (a, b) => `من ${a} إلى ${b} دقيقة`]]) {
     const { page, errors, close } = await open('', { context: { locale } });
-    const minutes = LESSONS[locale.slice(0, 2)].map((l) => l.minutes);
+    const lang = locale.slice(0, 2);
+    const minutes = LESSONS[lang].map((l) => l.minutes);
+    // The teal band: one 3D emoji disc per track, named for screen readers.
+    const band = await page.$$eval('.band a', (links) => links.map((a) => [a.getAttribute('href'), a.textContent.trim(), a.querySelector('img').getAttribute('src')]));
+    assert.deepEqual(band, TRACKS.map((t) => [`#/t/${t.id}`, t.name[lang], `assets/${t.emoji}.webp`]));
+    assert.equal(await page.locator('.why-card').count(), 3);
+    assert.equal((await page.locator('.why-card h3 >> nth=1').textContent()).trim(), words(Math.min(...minutes), Math.max(...minutes)));
     assert.equal(await page.locator('.why-list li').count(), 3);
-    assert.equal((await page.locator('.why-list li >> nth=0').textContent()).trim(), words(Math.min(...minutes), Math.max(...minutes)));
-    assert.equal(await page.getAttribute('.pro-banner a', 'href'), 'https://de9de9.dz');
-    assert.equal(await page.getAttribute('.pro-banner a', 'target'), '_blank');
+    assert.equal(await page.getAttribute('.app-promo a', 'href'), 'https://de9de9.dz');
+    assert.equal(await page.getAttribute('.app-promo a', 'target'), '_blank');
+    for (const link of await page.$$eval('.foot a', (links) => links.map((a) => [a.target, a.rel, a.getAttribute('aria-label')]))) {
+      assert.deepEqual(link.slice(0, 2), ['_blank', 'noopener']);
+      assert.ok(link[2], 'an image link has a name');
+    }
+    assert.equal(await page.getAttribute('.cta a', 'href'), '#/l/plomberie/deboucher-un-evier', 'the ribbon opens the next lesson');
     assert.equal(await overflows(page), false, `${locale}: the tilted title does not widen the page`);
     assert.deepEqual(errors, [], locale);
+    await close();
+  }
+});
+
+test('a track opens like a de9de9.dz group page: its emoji over the arch with the group\'s scene', async () => {
+  const { TRACKS } = await import('../../www/js/tracks.js');
+  for (const track of TRACKS) {
+    const { page, errors, close } = await open(`#/t/${track.id}`);
+    assert.equal(await page.getAttribute('.arch-bubble img', 'src'), `assets/${track.emoji}.webp`, track.id);
+    assert.equal(await page.getAttribute('.arch-scene', 'src'), `assets/category-scene/${track.scene}.webp`, track.id);
+    assert.equal(await page.getAttribute('.arch', 'aria-hidden'), 'true');
+    const broken = await page.$$eval('img', (imgs) => imgs.filter((i) => !i.complete || i.naturalWidth === 0).map((i) => i.src));
+    assert.deepEqual(broken, [], track.id);
+    assert.deepEqual(errors, [], track.id);
     await close();
   }
 });
@@ -355,6 +387,7 @@ test('B33, B34: with every lesson done, home says so and tracks offer a review',
   const { page, close } = await open('', { route: seedDone(keys) });
   assert.equal(await page.locator('.resume').count(), 0);
   assert.match(await page.locator('.all-done').textContent(), /Toutes les leçons sont terminées/);
+  assert.equal(await page.locator('.cta').count(), 0, 'no « next lesson » ribbon when none is left');
   await tap(page, '.track-row >> nth=0');
   await atHash(page, '#/t/plomberie');
   assert.match(await page.locator('.track-head .btn-primary').textContent(), /Revoir le parcours/);
