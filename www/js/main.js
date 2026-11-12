@@ -1,5 +1,5 @@
 import { LESSONS } from './content.js';
-import { SERVICES_URL } from './config.js';
+import { SERVICES_URL, STORE_LIVE } from './config.js';
 import { dir, t } from './i18n.js';
 import { markDone, readDone, readLocale, saveLocale } from './progress.js';
 import { setupQuiz } from './quiz.js';
@@ -128,14 +128,15 @@ function homeScreen() {
           </section>
           <h2 class="list-title">${tr('home.tracks')}</h2>
           <ul class="track-list">${tracks}</ul>
-          <a class="promo tap" href="${esc(storeUrl(locale, 'home'))}" target="_blank" rel="noopener">
-            <img src="assets/de9de9-logo.webp" alt="De9De9" width="64" height="57">
-            <span class="grow">
-              <strong>${tr('home.storeTitle')}</strong>
-              <small>${tr('home.storeBody')}</small>
-              <span class="promo-cta">${tr('home.storeCta')} ${ICON.out}</span>
-            </span>
-          </a>
+          ${STORE_LIVE ? `
+            <a class="promo tap" href="${esc(storeUrl(locale, 'home'))}" target="_blank" rel="noopener">
+              <img src="assets/de9de9-logo.webp" alt="De9De9" width="64" height="57">
+              <span class="grow">
+                <strong>${tr('home.storeTitle')}</strong>
+                <small>${tr('home.storeBody')}</small>
+                <span class="promo-cta">${tr('home.storeCta')} ${ICON.out}</span>
+              </span>
+            </a>` : ''}
           <p class="note">${tr('home.note')}</p>
         </div>
       </div>`,
@@ -188,7 +189,7 @@ function trackScreen(track) {
               ${bar(n, list.length)}
             </div>
             <a class="btn btn-primary" href="${start.href}">${start.label}</a>
-            ${track.shelf ? outLink(shelfUrl(track.shelf, locale, track.id, 'track'), 'btn btn-outline', `${tr('track.shop')} « ${esc(SHELVES[track.shelf].name[locale])} »`) : ''}
+            ${STORE_LIVE && track.shelf ? outLink(shelfUrl(track.shelf, locale, track.id, 'track'), 'btn btn-outline', `${tr('track.shop')} « ${esc(SHELVES[track.shelf].name[locale])} »`) : ''}
           </section>
           <ol class="lesson-list">${rows}</ol>
         </div>
@@ -256,7 +257,7 @@ function lessonScreen(track, lesson) {
       (tool) => `
         <li>
           <span>${esc(tool.name)}</span>
-          ${tool.shelf ? outLink(shelfUrl(tool.shelf, locale, campaign), 'shop-link', tr('lesson.toolsShop')) : ''}
+          ${STORE_LIVE && tool.shelf ? outLink(shelfUrl(tool.shelf, locale, campaign), 'shop-link', tr('lesson.toolsShop')) : ''}
         </li>`,
     )
     .join('');

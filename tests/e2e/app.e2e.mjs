@@ -6,7 +6,7 @@
 // status bar and the notch still need a check on real devices.
 import { after, before, test } from 'node:test';
 import assert from 'node:assert/strict';
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { chromium } from 'playwright';
 import { serve } from './server.mjs';
 
@@ -44,10 +44,22 @@ async function open(path = '', options = {}) {
   page.on('pageerror', (error) => errors.push(error.message));
   page.on('console', (message) => message.type() === 'error' && errors.push(message.text()));
   if (options.route) await options.route(page);
+  if ('storeLive' in options) await page.route('**/js/config.js', serveConfig(options.storeLive));
   await page.goto(server.url + path);
   if (!options.noWait) await page.waitForSelector('#app > .screen');
   return { page, errors, close: () => context.close() };
 }
+
+// The store tests set the shop switch themselves (STORE_LIVE in config.js,
+// false until the shop is online), so they test both states whatever its value.
+const CONFIG = readFileSync(`${WWW}js/config.js`, 'utf8');
+const SWITCH = /export const STORE_LIVE = (true|false);/;
+assert.match(CONFIG, SWITCH);
+const serveConfig = (live) => (route) =>
+  route.fulfill({
+    contentType: 'text/javascript; charset=utf-8',
+    body: CONFIG.replace(SWITCH, `export const STORE_LIVE = ${live};`),
+  });
 
 const tap = async (page, selector) => {
   await page.waitForTimeout(GUARD_MS);
@@ -214,12 +226,27 @@ test('B5: an unknown address shows the home screen and becomes #/', async () => 
   }
 });
 
-test('B19, B27, B38, B49: store links open outside the app, only where the shelf sells the tool', async () => {
-  const { page, close } = await open('#/l/electricite/remplacer-une-prise');
+const linksOut = (page) => page.$$eval('a[target="_blank"]', (links) => links.map((a) => a.href));
+
+test('B19: while the shop is not online, the app links to it nowhere; "find a pro" still opens de9de9.dz', async () => {
+  for (const path of ['', '#/t/plomberie', '#/l/electricite/remplacer-une-prise']) {
+    const { page, errors, close } = await open(path, { storeLive: false });
+    const lesson = path.startsWith('#/l/');
+    // A lesson's one link out is "Trouver un professionnel" (SERVICES_URL).
+    assert.deepEqual(await linksOut(page), lesson ? ['https://de9de9.dz/'] : [], path || 'home');
+    if (lesson) assert.equal(await page.locator('.tools li').count(), 5, 'the tools are still listed');
+    assert.deepEqual(errors, [], path || 'home');
+    await close();
+  }
+});
+
+test('B19, B27, B38, B49: once the shop is online, store links open outside the app, only where the shelf sells the tool', async () => {
+  const { page, close } = await open('#/l/electricite/remplacer-une-prise', { storeLive: true });
   const tools = await page.$$eval('.tools li', (rows) =>
     rows.map((row) => ({ name: row.querySelector('span').textContent.trim(), link: row.querySelector('a') && { href: row.querySelector('a').href, target: row.querySelector('a').target } })),
   );
   assert.equal(tools.find((t) => t.name.includes('VAT')).link, null, 'the VAT has no store link (Phase 1 F1)');
+  assert.ok(tools.filter((t) => t.link).length > 0, 'some tools link to the store');
   for (const tool of tools.filter((t) => t.link)) {
     assert.equal(tool.link.target, '_blank', tool.name);
     assert.match(tool.link.href, /^https:\/\/de9de9\.dz\/fr\/c\/[a-z-]+\?utm_source=academy-app&utm_medium=lesson&utm_campaign=electricite-remplacer-une-prise$/, tool.name);
@@ -227,9 +254,12 @@ test('B19, B27, B38, B49: store links open outside the app, only where the shelf
   await page.goto(`${server.url}#/t/magie`);
   await page.waitForSelector('.track-head');
   assert.equal(await page.locator('.track-head a[target="_blank"]').count(), 0, 'no shop button without a shelf (F8)');
+  await page.goto(`${server.url}#/`);
+  await page.waitForSelector('.home-head');
+  assert.equal(await page.getAttribute('.promo', 'href'), 'https://de9de9.dz/fr?utm_source=academy-app&utm_medium=home');
   await close();
 
-  const arabic = await open('#/t/plomberie', { context: { locale: 'ar-DZ' } });
+  const arabic = await open('#/t/plomberie', { context: { locale: 'ar-DZ' }, storeLive: true });
   const href = await arabic.page.getAttribute('.track-head a[target="_blank"]', 'href');
   assert.equal(decodeURIComponent(new URL(href).pathname), '/ar/c/أشغال-سباكة');
   assert.equal(new URL(href).searchParams.get('utm_medium'), 'track');

@@ -21,6 +21,8 @@ in `www/`, no framework or bundler, like the sibling app De9De9 Play
   and only to a shelf that really sells that tool (check the store's
   `docs/catalog/catalogue-produits.xlsx`, sheet "Catalogue"). No link beats a
   link to a shelf without the item.
+  Every store link renders only while `STORE_LIVE` (`www/js/config.js`) is
+  true: the shop is not online yet, and de9de9.dz is the services site.
   The slugs mirror the store's importer
   (`apps/api/seeders/catalogue-import.ts` in `laarrbbi/de9de9`); the Arabic
   store needs the Arabic slug. Links out of the app use `target="_blank"` so

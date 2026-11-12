@@ -19,7 +19,8 @@ npm test           # lesson rules, French/Arabic parity, routes, storage, links 
 npm run test:e2e   # the screens in a phone-sized Chromium (Playwright)
 ```
 
-`npm run test:e2e` needs Playwright's Chromium once: `npx playwright install chromium`.
+`npm run test:e2e` needs Playwright's Chromium once: `npx playwright install chromium`
+(or `CHROMIUM_PATH=/path/to/chromium npm run test:e2e` to use one already installed).
 It is the WebView's engine, not a phone: Android's back button, the status bar
 and the notch still need a check on a real device.
 
@@ -61,7 +62,7 @@ Finished lessons are kept on the phone and count in both languages.
 | `www/js/main.js` | The screens: home, track, lesson, and navigation |
 | `www/js/tracks.js` | The tracks: names, taglines, store group and shelf |
 | `www/js/shelves.js` | Store shelf slugs (FR and AR) and the link builder |
-| `www/js/config.js` | Store and services addresses |
+| `www/js/config.js` | Store and services addresses, and the switch for store links |
 | `www/js/i18n.js` | Interface text in both languages |
 | `www/js/quiz.js` · `progress.js` · `routes.js` | Quiz, saved progress and language, screen addresses |
 | `www/css/style.css` | Design tokens and styles |
@@ -108,6 +109,12 @@ sells its tools; the track screen then shows no shop button.
   instead of stacking it again, and taps in the 300 ms after a screen change
   are ignored, so a double tap only moves one screen.
 - **Links out:** store and "find a professional" links open in the phone's browser.
+- **Store links are off until the shop is online.** de9de9.dz is the
+  client's services site; the shop has no public address yet. While
+  `STORE_LIVE` is `false` in `www/js/config.js`, the app shows no store link:
+  tools keep their names, the track's shelf button and the store card go.
+  "Find a professional" still opens de9de9.dz. The lessons keep their
+  `shelf:`, so turning the switch on brings every link back.
 - **Status bar:** dark icons on every screen, set once in
   `capacitor.config.json` (`SystemBars.style: LIGHT`), so they stay readable
   when the phone is in dark mode. The app loads no `@capacitor/core`
@@ -134,9 +141,11 @@ sells its tools; the track screen then shows no shop button.
   detector, wire strippers or mixer cartridges. Those tools have no store
   link until the store stocks them; the magic track has no shelf at all.
   When they arrive, add the `shelf:` back in both languages.
-- **Addresses.** Store links open the website; "Find a professional" opens the
-  store home. Point `www/js/config.js` at the services page, or at the De9De9
-  app's deep links once they exist.
+- **Addresses.** The day the shop is online, set `STORE_URL` to its address
+  and `STORE_LIVE` to `true` in `www/js/config.js`, then run `npm run test:e2e`
+  (it checks every store link with the switch on, whatever its value), or
+  point them at the De9De9 app's deep links once they exist. "Find a
+  professional" opens the services site's home page.
 - **App icon.** It is the plain De9De9 logo, so on a home screen only the name
   tells it apart from the store app. An Academy variant is a design decision.
 - **Progress is per phone.** It is not tied to De9De9 accounts.
