@@ -110,7 +110,7 @@ function homeScreen() {
       <div class="screen home">
         <header class="home-head">
           <div class="home-bar">
-            <img class="mark" src="assets/logo-mark-white.png" alt="De9De9" width="44" height="39">
+            <span class="logo-tile"><img src="assets/de9de9-logo.webp" alt="De9De9" width="40" height="36"></span>
             <span class="app-tag">Academy</span>
             <button class="lang-btn" type="button" data-action="lang" lang="${other}" aria-label="${esc(tr('nav.switchLabel'))}">${tr('nav.switch')}</button>
           </div>
@@ -129,7 +129,7 @@ function homeScreen() {
           <h2 class="list-title">${tr('home.tracks')}</h2>
           <ul class="track-list">${tracks}</ul>
           <a class="promo tap" href="${esc(storeUrl(locale, 'home'))}" target="_blank" rel="noopener">
-            <img src="assets/de9de9-logo.png" alt="De9De9" width="64" height="57">
+            <img src="assets/de9de9-logo.webp" alt="De9De9" width="64" height="57">
             <span class="grow">
               <strong>${tr('home.storeTitle')}</strong>
               <small>${tr('home.storeBody')}</small>

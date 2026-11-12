@@ -22,7 +22,9 @@ let browser;
 before(async () => {
   assert.ok(existsSync(`${WWW}js/content.js`), 'www/js/content.js is missing: run `npm run build` first');
   server = await serve(WWW);
-  browser = await chromium.launch();
+  // CHROMIUM_PATH: a Chromium already on the machine, when it is not the one
+  // this Playwright version downloads (`npx playwright install chromium`).
+  browser = await chromium.launch({ executablePath: process.env.CHROMIUM_PATH || undefined });
 });
 
 after(async () => {
