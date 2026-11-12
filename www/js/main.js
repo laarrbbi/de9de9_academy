@@ -35,6 +35,7 @@ const ICON = {
   cross: svg('i', '0 0 20 20', `<path d="m6 6 8 8m0-8-8 8" ${stroke} stroke-width="2.2"/>`),
   clock: svg('i', '0 0 16 16', `<circle cx="8" cy="8" r="6.2" ${stroke} stroke-width="1.6"/><path d="M8 4.6V8l2.4 1.6" ${stroke} stroke-width="1.6"/>`),
   shield: svg('i', '0 0 16 16', '<path d="M8 1.6 2.6 3.8v3.8c0 3.2 2.3 5.8 5.4 6.8 3.1-1 5.4-3.6 5.4-6.8V3.8Z" fill="currentColor"/>'),
+  offline: svg('i', '0 0 16 16', `<rect x="4" y="1.6" width="8" height="12.8" rx="1.8" ${stroke} stroke-width="1.5"/><path d="M8 5v4.6m-2-2 2 2 2-2" ${stroke} stroke-width="1.5"/>`),
   warn: svg('i safety-icon', '0 0 24 24', '<path d="M12 2.4 4 5.6v5.6c0 4.8 3.4 8.8 8 10.4 4.6-1.6 8-5.6 8-10.4V5.6Z" fill="currentColor"/><path d="M12 7.5v5.5" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/><circle cx="12" cy="16.3" r="1.3" fill="#fff"/>'),
 };
 
@@ -56,15 +57,21 @@ function chips(lesson) {
     <span class="chip chip-${lesson.risk}">${ICON.shield}${tr(`lesson.risk.${lesson.risk}`)}</span>`;
 }
 
-function topbar(title) {
+// `reveal`: the hero repeats the title, so the bar shows it only once the
+// hero's headline has scrolled under it (see watchTitle). Screen readers get
+// the headline, not this copy.
+function topbar(title, { reveal = false } = {}) {
+  const attrs = reveal ? 'class="topbar-title is-hidden" data-reveal aria-hidden="true"' : 'class="topbar-title"';
   return `
     <header class="topbar">
       <button class="icon-btn" type="button" data-action="back" aria-label="${esc(tr('nav.back'))}">${ICON.back}</button>
-      <span class="topbar-title">${esc(title)}</span>
+      <span ${attrs}>${esc(title)}</span>
     </header>`;
 }
 
 // ---------- screens ----------
+// Every screen opens on the teal top of de9de9.dz (the client's services
+// site) and carries its content on a rounded sheet laid over it.
 
 function homeScreen() {
   const done = readDone();
@@ -72,6 +79,7 @@ function homeScreen() {
   const doneCount = all.filter((l) => done.has(l.key)).length;
   const next = nextLesson(all, done);
   const other = locale === 'fr' ? 'ar' : 'fr';
+  const minutes = all.map((l) => l.minutes);
 
   const resume = next
     ? `<a class="resume tap" href="${lessonHref(next)}">
@@ -104,43 +112,65 @@ function homeScreen() {
     })
     .join('');
 
-  return {
-    dark: true,
-    html: `
-      <div class="screen home">
-        <header class="home-head">
-          <div class="home-bar">
-            <span class="logo-tile"><img src="assets/de9de9-logo.webp" alt="De9De9" width="40" height="36"></span>
-            <span class="app-tag">Academy</span>
-            <button class="lang-btn" type="button" data-action="lang" lang="${other}" aria-label="${esc(tr('nav.switchLabel'))}">${tr('nav.switch')}</button>
-          </div>
-          <h1 tabindex="-1">${tr('home.title')}</h1>
-          <p>${tr('home.lead')}</p>
-        </header>
-        <div class="content">
-          <section class="card progress-card">
-            <div class="pc-top">
-              <span>${tr('home.progress')}</span>
-              <strong><span dir="ltr">${doneCount} / ${all.length}</span> <small>${tr('home.lessons')}</small></strong>
-            </div>
-            ${bar(doneCount, all.length)}
-            ${resume}
-          </section>
-          <h2 class="list-title">${tr('home.tracks')}</h2>
-          <ul class="track-list">${tracks}</ul>
-          ${STORE_LIVE ? `
-            <a class="promo tap" href="${esc(storeUrl(locale, 'home'))}" target="_blank" rel="noopener">
-              <img src="assets/de9de9-logo.webp" alt="De9De9" width="64" height="57">
-              <span class="grow">
-                <strong>${tr('home.storeTitle')}</strong>
-                <small>${tr('home.storeBody')}</small>
-                <span class="promo-cta">${tr('home.storeCta')} ${ICON.out}</span>
-              </span>
-            </a>` : ''}
-          <p class="note">${tr('home.note')}</p>
+  // « Pourquoi … ? »: de9de9.dz's tilted title and teal panel with the ant,
+  // with reasons that hold for every lesson (the lengths come from the lessons).
+  const reasons = [
+    [ICON.clock, tr('home.whyShort').replace('{min}', Math.min(...minutes)).replace('{max}', Math.max(...minutes))],
+    [ICON.shield, tr('home.whySafe')],
+    [ICON.offline, tr('home.whyOffline')],
+  ]
+    .map(([icon, text]) => `<li><span class="why-icon">${icon}</span><span>${text}</span></li>`)
+    .join('');
+
+  const store = STORE_LIVE
+    ? `<a class="promo card tap" href="${esc(storeUrl(locale, 'home'))}" target="_blank" rel="noopener">
+        <img src="assets/de9de9-logo.webp" alt="De9De9" width="64" height="57">
+        <span class="grow">
+          <strong>${tr('home.storeTitle')}</strong>
+          <small>${tr('home.storeBody')}</small>
+          <span class="promo-cta">${tr('home.storeCta')} ${ICON.out}</span>
+        </span>
+      </a>`
+    : '';
+
+  return `
+    <div class="screen home">
+      <header class="hero home-head">
+        <div class="home-bar">
+          <span class="logo-tile"><img src="assets/de9de9-logo.webp" alt="De9De9" width="40" height="36"></span>
+          <span class="app-tag">Academy</span>
+          <button class="lang-btn" type="button" data-action="lang" lang="${other}" aria-label="${esc(tr('nav.switchLabel'))}">${tr('nav.switch')}</button>
         </div>
-      </div>`,
-  };
+        <h1 tabindex="-1">${tr('home.title')}</h1>
+        <p class="hero-lead">${tr('home.lead')}</p>
+      </header>
+      <div class="sheet">
+        <section class="card progress-card">
+          <div class="pc-top">
+            <span>${tr('home.progress')}</span>
+            <strong><span dir="ltr">${doneCount} / ${all.length}</span> <small>${tr('home.lessons')}</small></strong>
+          </div>
+          ${bar(doneCount, all.length)}
+          ${resume}
+        </section>
+        <h2 class="list-title">${tr('home.tracks')}</h2>
+        <ul class="track-list">${tracks}</ul>
+        <section class="why" aria-labelledby="why-title">
+          <h2 class="why-title" id="why-title">${tr('home.whyTitle')}</h2>
+          <div class="why-panel">
+            <img class="ant" src="assets/ant.webp" alt="" width="104" height="104">
+            <ul class="why-list">${reasons}</ul>
+          </div>
+        </section>
+        ${store}
+        <section class="pro-banner">
+          <h2>${tr('home.proTitle')}</h2>
+          <p>${tr('home.proBody')}</p>
+          ${outLink(SERVICES_URL, 'btn btn-white', tr('lesson.proCta'))}
+        </section>
+        <p class="note">${tr('home.note')}</p>
+      </div>
+    </div>`;
 }
 
 function trackScreen(track) {
@@ -169,32 +199,31 @@ function trackScreen(track) {
     )
     .join('');
 
-  return {
-    dark: false,
-    html: `
-      <div class="screen">
-        ${topbar(track.name[locale])}
-        <div class="content">
-          <section class="card track-head">
-            <div class="th-top">
-              <span class="icon-chip big"><img src="assets/icons/${track.id}.svg" alt=""></span>
-              <div>
-                <p class="eyebrow">${esc(track.group[locale])}</p>
-                <h1 tabindex="-1">${esc(track.name[locale])}</h1>
-              </div>
-            </div>
-            <p class="tagline">${esc(track.tagline[locale])}</p>
-            <div class="th-progress">
-              <span>${count(n, list.length)} ${tr('track.done')}</span>
-              ${bar(n, list.length)}
-            </div>
-            <a class="btn btn-primary" href="${start.href}">${start.label}</a>
-            ${STORE_LIVE && track.shelf ? outLink(shelfUrl(track.shelf, locale, track.id, 'track'), 'btn btn-outline', `${tr('track.shop')} « ${esc(SHELVES[track.shelf].name[locale])} »`) : ''}
-          </section>
-          <ol class="lesson-list">${rows}</ol>
+  return `
+    <div class="screen">
+      ${topbar(track.name[locale], { reveal: true })}
+      <header class="hero track-hero">
+        <div class="th-top">
+          <span class="icon-chip big"><img src="assets/icons/${track.id}.svg" alt=""></span>
+          <div>
+            <p class="eyebrow">${esc(track.group[locale])}</p>
+            <h1 tabindex="-1">${esc(track.name[locale])}</h1>
+          </div>
         </div>
-      </div>`,
-  };
+        <p class="hero-lead">${esc(track.tagline[locale])}</p>
+      </header>
+      <div class="sheet">
+        <section class="card track-head">
+          <div class="th-progress">
+            <span>${count(n, list.length)} ${tr('track.done')}</span>
+            ${bar(n, list.length)}
+          </div>
+          <a class="btn btn-primary" href="${start.href}">${start.label}</a>
+          ${STORE_LIVE && track.shelf ? outLink(shelfUrl(track.shelf, locale, track.id, 'track'), 'btn btn-outline', `${tr('track.shop')} « ${esc(SHELVES[track.shelf].name[locale])} »`) : ''}
+        </section>
+        <ol class="lesson-list">${rows}</ol>
+      </div>
+    </div>`;
 }
 
 function quizBlock(lesson, after) {
@@ -215,7 +244,7 @@ function quizBlock(lesson, after) {
                 )
                 .join('')}
             </div>
-            <p class="why"><span class="mark-right">${ICON.check}</span><span class="mark-wrong">${ICON.cross}</span><span>${esc(q.explanation)}</span></p>
+            <p class="why-answer"><span class="mark-right">${ICON.check}</span><span class="mark-wrong">${ICON.cross}</span><span>${esc(q.explanation)}</span></p>
           </fieldset>
         </li>`,
     )
@@ -233,7 +262,7 @@ function quizBlock(lesson, after) {
           <button class="btn btn-outline" type="button" data-quiz-retry hidden>${tr('quiz.retry')}</button>
         </div>
         <div class="success" data-quiz-success tabindex="-1" hidden>
-          <span class="success-icon">${ICON.check}</span>
+          <img class="ant" src="assets/ant.webp" alt="" width="96" height="96">
           <p class="success-title">${tr('quiz.success')}</p>
           <a class="btn btn-primary" href="${after.href}">${after.label} ${ICON.chevron}</a>
         </div>
@@ -287,7 +316,6 @@ function lessonScreen(track, lesson) {
     </nav>`;
 
   return {
-    dark: false,
     setup: () => {
       setupQuiz(app.querySelector('form[data-quiz]'), {
         incomplete: tr('quiz.incomplete'),
@@ -299,12 +327,14 @@ function lessonScreen(track, lesson) {
       });
     },
     html: `
-      <div class="screen">
+      <div class="screen lesson${done ? ' is-done' : ''}">
         ${topbar(`${track.name[locale]} · ${i + 1}/${list.length}`)}
-        <article class="content lesson${done ? ' is-done' : ''}">
+        <header class="hero lesson-hero">
           <p class="eyebrow">${tr('track.lesson')} ${i + 1}</p>
           <h1 tabindex="-1">${esc(lesson.title)}</h1>
-          <p class="lead">${esc(lesson.summary)}</p>
+          <p class="hero-lead">${esc(lesson.summary)}</p>
+        </header>
+        <article class="sheet">
           <div class="chips">${chips(lesson)}<span class="chip chip-low done-chip">${ICON.check}${tr('lesson.isDone')}</span></div>
           ${safety}
           <section class="card tools">
@@ -332,10 +362,24 @@ function screenFor(route) {
   return null;
 }
 
-// The browser's address-bar colour, when the app runs in a browser. In the
-// phone app the status bar style is set once in capacitor.config.json.
-function setThemeColor(dark) {
-  document.querySelector('meta[name="theme-color"]').content = dark ? '#1d7872' : '#ffffff';
+// Shows a top bar's `data-reveal` title while the hero's headline is out of
+// sight under the bar. One observer at a time: each screen replaces it.
+let titleWatch;
+function watchTitle() {
+  titleWatch?.disconnect();
+  titleWatch = undefined;
+  const title = app.querySelector('.topbar-title[data-reveal]');
+  const headline = app.querySelector('.hero h1');
+  if (!title || !headline || !('IntersectionObserver' in window)) {
+    title?.classList.remove('is-hidden');
+    return;
+  }
+  const below = app.querySelector('.topbar').offsetHeight;
+  titleWatch = new IntersectionObserver(
+    ([entry]) => title.classList.toggle('is-hidden', entry.isIntersecting),
+    { rootMargin: `-${below}px 0px 0px 0px` },
+  );
+  titleWatch.observe(headline);
 }
 
 // The stack of screens behind this one, kept in each history entry.
@@ -354,13 +398,14 @@ function render(direction) {
       }
       screen = homeScreen();
     }
-    app.innerHTML = screen.html;
+    // A screen is its HTML, or { html, setup } when it needs wiring up.
+    app.innerHTML = screen.html ?? screen;
     screen.setup?.();
+    watchTitle();
   } catch (error) {
     showFailure(error);
     return;
   }
-  setThemeColor(screen.dark);
   if (direction !== 'none') {
     app.firstElementChild.classList.add(direction === 'back' ? 'enter-back' : 'enter-forward');
     app.querySelector('h1')?.focus({ preventScroll: true });

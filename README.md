@@ -6,7 +6,10 @@ trick. Each lesson lists the tools it needs with a link to the right shelf of
 the store, says when to stop and call a professional, and ends with a quiz.
 
 French and Arabic (right to left), with the store's brand and design tokens
-(`laarrbbi/de9de9`, `docs/design/DESIGN-SYSTEM.md`). Built like De9De9 Play:
+(`laarrbbi/de9de9`, `docs/design/DESIGN-SYSTEM.md`) and the look of
+de9de9.dz, the client's services site: a teal top on every screen, the
+content on a rounded sheet over it, the tilted « Pourquoi » title, the coral
+banner and the ant mascot. Built like De9De9 Play:
 one web codebase (`www/`), wrapped for iOS and Android with Capacitor. All
 lessons ship inside the app, so it works offline.
 
@@ -67,6 +70,8 @@ Finished lessons are kept on the phone and count in both languages.
 | `www/js/quiz.js` · `progress.js` · `routes.js` | Quiz, saved progress and language, screen addresses |
 | `www/css/style.css` | Design tokens and styles |
 | `www/assets/icons/<track>.svg` | Track icons, in the store's icon style |
+| `www/assets/de9de9-logo.webp`, `ant.webp` | The client's logo and ant mascot, as the store ships them (`apps/storefront/src/assets/`) |
+| `www/assets/fonts/` | Plus Jakarta Sans (Latin) and Cairo (Arabic), the store's faces |
 | `tests/*.test.mjs` | Unit tests (`node:test`): lessons, parity, routes, storage, links |
 | `tests/e2e/` | Browser tests of the screens, and the small server they use |
 | `reports/` | Code review reports (see `.claude/skills/code-review-pipeline/`) |
@@ -115,9 +120,9 @@ sells its tools; the track screen then shows no shop button.
   tools keep their names, the track's shelf button and the store card go.
   "Find a professional" still opens de9de9.dz. The lessons keep their
   `shelf:`, so turning the switch on brings every link back.
-- **Status bar:** dark icons on every screen, set once in
-  `capacitor.config.json` (`SystemBars.style: LIGHT`), so they stay readable
-  when the phone is in dark mode. The app loads no `@capacitor/core`
+- **Status bar:** light icons on every screen, over the teal top, set once
+  in `capacitor.config.json` (`SystemBars.style: DARK`, i.e. for a dark
+  background), so the phone's dark mode does not change them. The app loads no `@capacitor/core`
   JavaScript, so plugins can't be called from `www/js/` without vendoring it.
 - **Language:** the first launch follows the phone's language (Arabic phones
   get Arabic). On iOS this needs `CFBundleLocalizations` in `Info.plist`,
@@ -148,6 +153,9 @@ sells its tools; the track screen then shows no shop button.
   professional" opens the services site's home page.
 - **App icon.** It is the plain De9De9 logo, so on a home screen only the name
   tells it apart from the store app. An Academy variant is a design decision.
+  `resources/logo.png` is still the Figma rendition of the logo; inside the
+  app it is the client's artwork (the store's `docs/design/brand/logo-master.png`),
+  which the icons should use when they are made again.
 - **Progress is per phone.** It is not tied to De9De9 accounts.
 - **Store listing.** App ID `com.avalonlbs.de9academy` (same owner as De9De9
   Play); no signing, store listing or screenshots yet.

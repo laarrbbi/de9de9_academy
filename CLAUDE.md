@@ -27,9 +27,14 @@ in `www/`, no framework or bundler, like the sibling app De9De9 Play
   (`apps/api/seeders/catalogue-import.ts` in `laarrbbi/de9de9`); the Arabic
   store needs the Arabic slug. Links out of the app use `target="_blank"` so
   Capacitor opens them in the phone's browser.
-- **Design** follows the store's `docs/design/DESIGN-SYSTEM.md`; tokens live
-  at the top of `www/css/style.css`. Use logical properties (`inline-start`,
-  `margin-inline`) so RTL mirrors itself; direction-bearing icons get `.flip`.
+- **Design** follows the store's `docs/design/DESIGN-SYSTEM.md` (its
+  `claude/elegant-bell-b983ax` branch has the 2026-11-09 update: Plus Jakarta
+  Sans, the client's logo on a white tile over teal, the de9de9.dz elements);
+  tokens live at the top of `www/css/style.css`. Every screen has the teal top
+  and the rounded sheet. White text only on `--top` (brand-deep) or
+  `--accent-deep`: on the bright `--brand` and `--accent` it fails AA. Use
+  logical properties (`inline-start`, `margin-inline`) so RTL mirrors itself;
+  direction-bearing icons get `.flip`.
 - **Mobile platform layer:** never lock zoom; gate `:hover` behind
   `(hover: hover) and (pointer: fine)`; give every control `:active` feedback;
   read safe areas through `--sat` / `--sab`.

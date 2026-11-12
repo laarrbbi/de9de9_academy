@@ -135,6 +135,7 @@ test('B3, B4, B36, B40, B41, B33, B34: a reader finishes a lesson through its qu
   await page.locator('[data-quiz-retry]').tap();
   await answerQuiz(page);
   assert.equal(await page.isVisible('[data-quiz-success]'), true);
+  assert.equal(await page.isVisible('[data-quiz-success] img.ant'), true, 'the ant cheers the pass');
   assert.equal(await page.evaluate(() => document.activeElement?.hasAttribute('data-quiz-success')), true);
   assert.equal(await page.isVisible('.done-chip'), true);
 
@@ -231,10 +232,10 @@ const linksOut = (page) => page.$$eval('a[target="_blank"]', (links) => links.ma
 test('B19: while the shop is not online, the app links to it nowhere; "find a pro" still opens de9de9.dz', async () => {
   for (const path of ['', '#/t/plomberie', '#/l/electricite/remplacer-une-prise']) {
     const { page, errors, close } = await open(path, { storeLive: false });
-    const lesson = path.startsWith('#/l/');
-    // A lesson's one link out is "Trouver un professionnel" (SERVICES_URL).
-    assert.deepEqual(await linksOut(page), lesson ? ['https://de9de9.dz/'] : [], path || 'home');
-    if (lesson) assert.equal(await page.locator('.tools li').count(), 5, 'the tools are still listed');
+    // The one link out left is "Trouver un professionnel" (SERVICES_URL),
+    // in the home screen's coral banner and in a lesson's "call a pro".
+    assert.deepEqual(await linksOut(page), path.startsWith('#/t/') ? [] : ['https://de9de9.dz/'], path || 'home');
+    if (path.startsWith('#/l/')) assert.equal(await page.locator('.tools li').count(), 5, 'the tools are still listed');
     assert.deepEqual(errors, [], path || 'home');
     await close();
   }
@@ -264,6 +265,38 @@ test('B19, B27, B38, B49: once the shop is online, store links open outside the 
   assert.equal(decodeURIComponent(new URL(href).pathname), '/ar/c/أشغال-سباكة');
   assert.equal(new URL(href).searchParams.get('utm_medium'), 'track');
   await arabic.close();
+});
+
+test('home: "Pourquoi" gives the real range of lesson lengths, and the coral banner opens the services site', async () => {
+  const { LESSONS } = await import('../../www/js/content.js');
+  for (const [locale, words] of [['fr-FR', (a, b) => `Des leçons de ${a} à ${b} minutes`], ['ar-DZ', (a, b) => `دروس من ${a} إلى ${b} دقيقة`]]) {
+    const { page, errors, close } = await open('', { context: { locale } });
+    const minutes = LESSONS[locale.slice(0, 2)].map((l) => l.minutes);
+    assert.equal(await page.locator('.why-list li').count(), 3);
+    assert.equal((await page.locator('.why-list li >> nth=0').textContent()).trim(), words(Math.min(...minutes), Math.max(...minutes)));
+    assert.equal(await page.getAttribute('.pro-banner a', 'href'), 'https://de9de9.dz');
+    assert.equal(await page.getAttribute('.pro-banner a', 'target'), '_blank');
+    assert.equal(await overflows(page), false, `${locale}: the tilted title does not widen the page`);
+    assert.deepEqual(errors, [], locale);
+    await close();
+  }
+});
+
+test('the track screen\'s top bar shows the title once the headline has scrolled under it', async () => {
+  const { page, close } = await open('#/t/electricite');
+  const title = page.locator('.topbar-title');
+  assert.equal(await title.getAttribute('aria-hidden'), 'true', 'the headline is what screen readers get');
+  await page.waitForFunction(() => document.querySelector('.topbar-title').classList.contains('is-hidden'));
+  await page.evaluate(() => window.scrollTo(0, 400));
+  await page.waitForFunction(() => !document.querySelector('.topbar-title').classList.contains('is-hidden'));
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await page.waitForFunction(() => document.querySelector('.topbar-title').classList.contains('is-hidden'));
+  // A lesson's top bar says something the headline does not: always shown.
+  await tap(page, '.lesson-row >> nth=0');
+  await atHash(page, '#/l/electricite/tableau-electrique');
+  assert.equal(await page.locator('.topbar-title.is-hidden').count(), 0);
+  assert.match(await page.locator('.topbar-title').textContent(), /Électricité · 1\/3/);
+  await close();
 });
 
 test('B4: every lesson opens without errors or sideways scrolling, in both languages', async () => {
